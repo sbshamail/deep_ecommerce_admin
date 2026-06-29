@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "gitpush": "git add . && git commit -m \"update\" && git push"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -16,6 +17,7 @@
     "next": "16.2.9",
     "radix-ui": "^1.6.0",
     "react": "19.2.4",
+    "react-day-picker": "^10.0.1",
     "react-dom": "19.2.4",
     "shadcn": "^4.11.0",
     "tailwind-merge": "^3.6.0",

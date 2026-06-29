@@ -1,0 +1,32 @@
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Input } from "@/components/ui/input";
+import { SearchIcon } from "lucide-react";
+import { ChangeEvent } from "react";
+
+export interface GlobalFilterType {
+  globalFilter?: string;
+  setGlobalFilter?: (value: string) => void;
+}
+const GlobalFilter = ({ globalFilter, setGlobalFilter }: GlobalFilterType) => {
+  const handleGlobalFilter = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    if (setGlobalFilter) {
+      setGlobalFilter(value);
+    }
+  };
+  return (
+    <ButtonGroup>
+      <Button variant="outline" aria-label="Search">
+        <SearchIcon />
+      </Button>
+      <Input
+        placeholder="Search..."
+        onChange={handleGlobalFilter}
+        value={globalFilter}
+      />
+    </ButtonGroup>
+  );
+};
+
+export default GlobalFilter;

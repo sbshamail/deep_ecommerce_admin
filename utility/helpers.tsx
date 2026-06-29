@@ -75,9 +75,20 @@ export class utility {
     }, obj) as T | undefined;
   }
 
-  static hasObjectValues(obj: Record<string, unknown>) {
+  static hasObjectValues(obj: object) {
     return obj && Object.keys(obj).length > 0;
   }
 }
 
 export type HelperPrototype = typeof utility;
+
+export const {
+  formatDate,
+  shuffleArray,
+  capitalizeCamelSpace,
+  currencyFormatter,
+  titleSubstring,
+  seoTitle,
+  getNestedProperty,
+  hasObjectValues,
+} = utility;
