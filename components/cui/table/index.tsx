@@ -106,7 +106,7 @@ const Table = ({
       <div
         className={twMerge(
           clsx(
-            { "p-4 py-10": !fullScreen }, // Apply when not fullScreen
+            // { "p-4 py-10": !fullScreen }, // Apply when not fullScreen
             " shadow-2xl shadow-border border border-border rounded-[20px] gap-2 ",
             { "p-0 m-0 space-y-0": fullScreen }, // Apply when fullScreen
             layoutClass,
