@@ -44,10 +44,7 @@ export const demoActionMenuList = ({}): ActionMenuList[] => [
 //     </>
 //   );
 // };
-export const demoNewActionMenu = ({}: Record<
-  string,
-  unknown
->): NewActionMenu[] => [
+export const demoNewActionMenu = ({}): NewActionMenu[] => [
   {
     dropdownMenu: [
       {
