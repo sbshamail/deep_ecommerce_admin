@@ -12,7 +12,7 @@ interface ActionType {
 }
 export interface ActionMenuList {
   title: string;
-  icon: string;
+
   Component?: ((props: ActionType) => JSX.Element) | JSX.Element;
   visible?: "selected" | "unselected";
   multiSelected?: boolean;
@@ -42,13 +42,13 @@ export interface ColumnFilterType {
   value: string;
 }
 export interface NewDropDownMenu {
-  icon: string;
+  Trigger: () => React.ReactNode;
   contents: (props: Record<string, unknown>) => ActionMenuList[];
 }
 export interface NewActionMenu {
   dropdownMenu?: NewDropDownMenu[];
-  icon?: string;
-  action?: (props: Record<string, unknown>) => JSX.Element;
+  Icon?: React.ReactNode;
+  action?: (props: Record<string, unknown> | null) => React.ReactNode;
 }
 export interface ActionStateTypes {
   Component: ((props: ActionType) => JSX.Element) | JSX.Element;

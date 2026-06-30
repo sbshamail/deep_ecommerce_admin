@@ -6,16 +6,26 @@ import { hasObjectValues } from "@/utility/helpers";
 import FullScreenTable, {
   FullScreenTableType,
 } from "../components/FullScreenTable";
+import ColumnHideShow from "../filters/ColumnHideShow";
 import FromToDateFilter, {
   FromToDateFilterTypes,
 } from "../filters/FromToDateFilter";
 import GlobalFilter, { GlobalFilterType } from "../filters/GlobalFilter";
+import HeaderFilterList, {
+  HeaderColumnFilter,
+} from "../filters/HeaderFilterList";
+import ShowColumnFilter, {
+  ColumnFilterFieldsType,
+} from "../filters/ShowColumnFilter";
 
 export interface HeaderType {
   headerAction?: () => JSX.Element;
   dates?: FromToDateFilterTypes;
   globalFilters?: GlobalFilterType;
-
+  showOnlyColumns?: ColumnType[];
+  showColumnFilterFields?: ColumnFilterFieldsType;
+  columnsFilter?: HeaderColumnFilter;
+  setShowOnlyColumns?: React.Dispatch<React.SetStateAction<ColumnType[]>>;
   showFullScreen?: FullScreenTableType;
 }
 
@@ -27,16 +37,21 @@ const TableHeader = ({
   headerAction,
   globalFilters,
   columns,
-
+  showOnlyColumns,
+  showColumnFilterFields,
+  columnsFilter,
+  setShowOnlyColumns,
   showFullScreen,
 }: Props) => {
   const { fromDate, setFromDate, toDate, setToDate } = dates || {};
 
   const { setGlobalFilter, globalFilter } = globalFilters || {};
-
+  const { columnFilterField, setColumnFilterFields } =
+    showColumnFilterFields || {};
+  const { columnFilter, setColumnFilter } = columnsFilter || {};
   return (
     <div>
-      <div className=" flex flex-col font-semibold">
+      <div className=" flex flex-col gap-2 font-semibold">
         <div className="flex items-center justify-between">
           {dates && hasObjectValues(dates) && setFromDate && setToDate && (
             <FromToDateFilter
@@ -53,7 +68,20 @@ const TableHeader = ({
                 globalFilter={globalFilter}
               />
             )}
-
+            {setColumnFilterFields && (
+              <ShowColumnFilter
+                columns={showOnlyColumns ?? columns}
+                columnFilterField={columnFilterField}
+                setColumnFilterFields={setColumnFilterFields}
+              />
+            )}
+            {setShowOnlyColumns && (
+              <ColumnHideShow
+                allColumns={columns}
+                showOnlyColumns={showOnlyColumns}
+                setShowOnlyColumns={setShowOnlyColumns}
+              />
+            )}
             {showFullScreen && (
               <FullScreenTable
                 fullScreen={showFullScreen?.fullScreen}
@@ -63,6 +91,11 @@ const TableHeader = ({
           </div>
         </div>
         {headerAction && <div className="">{headerAction()}</div>}
+        <HeaderFilterList
+          columnFilterField={columnFilterField}
+          columnFilter={columnFilter}
+          setColumnFilter={setColumnFilter}
+        />
       </div>
     </div>
   );

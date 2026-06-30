@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { ChildrenType, ClassNameType } from "@/types/common_types";
 import { twMerge } from "tailwind-merge";
 import { Button } from "../ui/button";
@@ -23,6 +24,7 @@ export interface DropdownListProps {
   contents?: ContentItem[];
   children?: ChildrenType;
   contentId?: string; //use for key title in contents,
+  contentsWrapClass?: ClassNameType;
   contentClass?: ClassNameType;
 }
 
@@ -30,6 +32,7 @@ export interface ContentListType {
   content: ContentItem;
   contentId?: string; //use for key title in contents,
   contentClass?: ClassNameType;
+  contentsWrapClass?: ClassNameType;
 }
 
 // Inside Dropdown
@@ -55,7 +58,9 @@ export const ContentList: FC<ContentListType> = ({
     >
       {Icon && <Icon />}
 
-      <span className="text-sm px-2 py-1">{content[contentId] as React.ReactNode}</span>
+      <span className="text-sm px-2 py-1">
+        {content[contentId] as React.ReactNode}
+      </span>
     </span>
   );
 };
@@ -65,14 +70,15 @@ const DropdownList = ({
   contents,
   contentClass,
   contentId,
+  contentsWrapClass,
 }: DropdownListProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
         {Trigger ? Trigger() : <Button variant="outline">Open popover</Button>}
       </PopoverTrigger>
-      <PopoverContent>
-        <div className=" flex flex-col select-none ">
+      <PopoverContent className={cn(" m-0 p-0", contentsWrapClass)}>
+        <div className=" flex flex-col select-none w-full">
           {children
             ? children
             : contents?.map((content: ContentItem, key: number) => (

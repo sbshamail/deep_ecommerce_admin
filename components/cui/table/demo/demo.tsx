@@ -1,6 +1,78 @@
 "use client";
 
-import { ColumnType, TableTabsType } from "@/types/table_types";
+import {
+  ActionMenuList,
+  ColumnType,
+  NewActionMenu,
+  TableTabsType,
+} from "@/types/table_types";
+import { Import } from "lucide-react";
+
+export const demoActionMenuList = ({}): ActionMenuList[] => [
+  {
+    title: "Edit",
+    // icon: 'tabler:edit',
+    Component: ({}) => <p className="text-center">This is Edit Content</p>,
+    visible: "selected",
+  },
+  {
+    title: "Create",
+    // icon: 'tabler:plus',
+    Component: <p className="text-center">This is Create Content</p>,
+    visible: "unselected",
+  },
+  {
+    title: "Delete",
+    // icon: 'tabler:minus',
+    deleted: ({}) => {},
+    visible: "selected",
+    multiSelected: true,
+  },
+];
+
+// const StatusModal = ({ icon }: any): JSX.Element => {
+//   const [open, setOpen] = useState(false);
+//   const toggle = (action: boolean) => setOpen(action);
+//   return (
+//     <>
+//       <Iconify
+//         icon={icon}
+//         onClick={() => toggle(true)}
+//         className="iconPrimary"
+//       />
+//       <SimpleModal close={toggle} open={open}></SimpleModal>
+//     </>
+//   );
+// };
+export const demoNewActionMenu = ({}: Record<
+  string,
+  unknown
+>): NewActionMenu[] => [
+  {
+    dropdownMenu: [
+      {
+        Trigger: () => <Import />,
+        contents: ({}: Record<string, unknown>) => [
+          {
+            title: "Export All",
+            // action: () => {},
+            Component: <></>,
+          },
+          {
+            title: " Export Selected",
+            action: () => {},
+            visible: "selected",
+            multiSelected: true,
+          },
+        ],
+      },
+    ],
+  },
+  // {
+  //   icon: "solar:file-download-bold",
+  //   action: StatusModal,
+  // },
+];
 
 export const demoData = [
   { id: 1, name: "John Doe", age: 30, email: "john.doe@example.com" },
@@ -169,20 +241,20 @@ export const demoData2 = [
 ];
 
 export const demoColumns: ColumnType[] = [
-  { title: "ID", accessor: "id", filterId: "id" },
+  { title: "ID", accessor: "id" },
   { title: "Name", accessor: "name", filterId: "name" },
   { title: "Age", accessor: "age", filterId: "age" },
   { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email", filterId: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
+  { title: "Email", accessor: "email" },
 ];
 
 export const demoColumns2: ColumnType[] = [
@@ -201,6 +273,8 @@ export const tabs: TableTabsType[] = [
     columns: demoColumns,
     data: demoData,
     total: demoData.length,
+    actionMenuList: demoActionMenuList,
+    newActionMenu: demoNewActionMenu,
     expandable: true,
     // multiExpandable: true,
     ExpandingContent: ExpandingTable,

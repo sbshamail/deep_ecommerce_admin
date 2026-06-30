@@ -65,6 +65,7 @@ const Table = ({
 
   const [showOnlyColumns, setShowOnlyColumns] = useState(columns);
   const [columnFilterField, setColumnFilterFields] = useState<ColumnType[]>([]);
+
   //   const fullScreen = header?.showFullScreen?.fullScreen ?? false;
   const fullScreen = false;
   const { dimension: headerDimension, divRef: headerRef } = useDivDimensions(
@@ -100,15 +101,15 @@ const Table = ({
       tdBodyClass={tdBodyClass}
     />
   );
-
+  // console.log({ headerDimension }, { footerDimension });
   return (
-    <FullScreenDom open={fullScreen} className="overflow-hidden">
+    <FullScreenDom open={fullScreen}>
       <div
         className={twMerge(
           clsx(
             // { "p-4 py-10": !fullScreen }, // Apply when not fullScreen
             " shadow-2xl shadow-border border border-border rounded-[20px] gap-2 ",
-            { "p-0 m-0 space-y-0": fullScreen }, // Apply when fullScreen
+            { "p-0 m-0 space-y-0 h-screen": fullScreen }, // Apply when fullScreen
             layoutClass,
           ),
         )}
@@ -118,44 +119,40 @@ const Table = ({
             dates={header?.dates}
             // columnsFilter={header?.columnsFilter}
             globalFilters={header?.globalFilters}
-            // showColumnFilterFields={{
-            //   columnFilterField,
-            //   setColumnFilterFields,
-            // }}
+            showColumnFilterFields={{
+              columnFilterField,
+              setColumnFilterFields,
+            }}
             showFullScreen={header?.showFullScreen}
-            // showOnlyColumns={showColumnFilter ? showOnlyColumns : undefined}
-            // setShowOnlyColumns={
-            //   showColumnFilter ? setShowOnlyColumns : undefined
-            // }
+            showOnlyColumns={showColumnFilter ? showOnlyColumns : undefined}
+            columnsFilter={header?.columnsFilter}
+            setShowOnlyColumns={
+              showColumnFilter ? setShowOnlyColumns : undefined
+            }
             headerAction={header?.headerAction}
             columns={columns}
           />
         </div>
         <div
-          style={
-            fullScreen && headerDimension && footerDimension
-              ? {
-                  height: `calc(100vh - ${headerDimension.height + footerDimension.height}px)`,
-                  overflow: "auto",
-                }
-              : { overflow: "auto" }
-          }
+          style={{
+            height: `100vh-(${headerDimension?.height}+${footerDimension?.height})`,
+            overflow: "auto",
+          }}
         >
-          <div>
-            <TableTabs
-              tabs={tabs}
-              tableMain={tableMain}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              setSelectedRows={setSelectedRows}
-              titleTable={titleTable}
-            />
-          </div>
+          <TableTabs
+            tabs={tabs}
+            tableMain={tableMain}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setSelectedRows={setSelectedRows}
+            titleTable={titleTable}
+          />
         </div>
 
         {showPagination && pagination && (
           <div
-            style={{ height: footerDimension?.height || "auto" }}
+            // className="w-full fixed bottom-0"
+            // style={{ height: footerDimension?.height || "auto" }}
             ref={footerRef}
           >
             <Pagination

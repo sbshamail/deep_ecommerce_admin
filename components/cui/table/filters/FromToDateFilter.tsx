@@ -15,7 +15,7 @@ const FromToDateFilter: FC<FromToDateFilterTypes> = ({
   setToDate = () => {},
 }) => {
   return (
-    <div className="flex  item-center select-none">
+    <div className="flex  items-center select-none">
       <div>
         <CalendarDays />
       </div>

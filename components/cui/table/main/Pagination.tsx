@@ -67,6 +67,7 @@ const Pagination = ({
               title: `${size} `,
               click: () => handledataLimitChange(size),
             }))}
+          contentsWrapClass="w-32"
         />
       </div>
       <div className="flex items-center space-x-2 select-none">
