@@ -1,5 +1,6 @@
 import { TableTabsType } from "@/types/table_types";
 import { JSX, ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
 export interface TabPropsType {
   tabs?: TableTabsType[];
@@ -10,71 +11,53 @@ export interface TabPropsType {
 }
 interface Props extends TabPropsType {
   tableMain: () => ReactNode;
+  className?: string;
+  contentClassName?: string;
 }
 const TableTabs = ({
   tabs,
   activeTab = 0,
   setActiveTab,
-  setSelectedRows,
   tableMain,
   titleTable,
+  className,
+  contentClassName,
 }: Props) => {
   return (
-    <div className="">
-      {/* {openModal && modelContent()} */}
+    <div className={twMerge("", className)}>
       {tabs && tabs.length > 0 && setActiveTab ? (
         <>
-          <div className="flex text-center items-center justify-between">
+          <div className="flex text-center items-center justify-between flex-none">
             {tabs.map((item, index) => {
               const isActive = index === activeTab;
               return (
                 item.titleTable && (
                   <div
                     key={index}
-                    className={` relative cursor-pointer text-center w-full border-none shadow-2xl font-semibold  hover:bg-primary/90 select-none  ${
+                    className={`relative cursor-pointer text-center w-full border-none font-semibold hover:bg-primary/90 select-none ${
                       isActive
                         ? "bg-primary text-primary-foreground"
-                        : "bg-primary/40 text-foreground/50 "
+                        : "bg-primary/40 text-foreground/50"
                     }`}
-                    onClick={() => {
-                      setActiveTab(index);
-                    }}
+                    onClick={() => setActiveTab(index)}
                   >
-                    {/* {activeTab === index && (
-                    <div className=" absolute top-0 left-0  text-white/80 cursor-pointer hover:text-white">
-                      <div
-                        onClick={() =>
-                          setSelectedRows ? setSelectedRows([]) : {}
-                        }
-                        className={`text-[0.7em]`}
-                      >
-                        <div className="flex item-center">
-                          <Iconify icon="mdi:close-box" fontSize="1em" />
-                          unselect
-                        </div>
-                      </div>
-                    </div>
-                  )} */}
-                    <div className={`text-[0.7em]`}>{item.titleTable}</div>
+                    <div className="text-[0.7em] py-1">{item.titleTable}</div>
                   </div>
                 )
               );
             })}
           </div>
-
-          {tableMain()}
-          {/* {tabs[activeTab]?.content ? tabs[activeTab]?.content() : tableMain()} */}
+          <div className={contentClassName}>{tableMain()}</div>
         </>
       ) : (
-        <div>
-          <div
-            className={` relative cursor-pointer text-center w-full border-none shadow-2xl font-semibold   select-none   bg-primary/80 text-primary-foreground  
-                  `}
-          >
-            <div className={`text-[0.7em]`}>{titleTable}</div>
-          </div>
-          {tableMain()}
-        </div>
+        <>
+          {titleTable && (
+            <div className="relative cursor-pointer text-center w-full border-none font-semibold select-none bg-primary/80 text-primary-foreground flex-none">
+              <div className="text-[0.7em] py-1">{titleTable}</div>
+            </div>
+          )}
+          <div className={contentClassName}>{tableMain()}</div>
+        </>
       )}
     </div>
   );

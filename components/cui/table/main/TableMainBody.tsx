@@ -30,10 +30,10 @@ export interface TableMainBodyTypes extends TableMainClassesType {
   multiExpandable?: boolean;
   ExpandingContent?: ExpandingTableType;
   //styles
-
   striped?: boolean;
   stripedClass?: ClassNameType;
   tableWrapperClass?: ClassNameType;
+  wrapperClass?: ClassNameType;
 }
 const TableMainBody = ({
   data,
@@ -48,6 +48,7 @@ const TableMainBody = ({
   striped,
   stripedClass = "bg-accent",
   tableWrapperClass,
+  wrapperClass,
   // tables classes
   tableClass,
   trHeadClass,
@@ -194,7 +195,7 @@ const TableMainBody = ({
     </tbody>
   );
   return (
-    <div>
+    <div className={wrapperClass}>
       <main className={`relative ${tableWrapperClass} `}>
         <div ref={divRef} className="select-none">
           <table

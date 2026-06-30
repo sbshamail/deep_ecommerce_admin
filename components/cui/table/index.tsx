@@ -66,16 +66,9 @@ const Table = ({
   const [showOnlyColumns, setShowOnlyColumns] = useState(columns);
   const [columnFilterField, setColumnFilterFields] = useState<ColumnType[]>([]);
 
-  //   const fullScreen = header?.showFullScreen?.fullScreen ?? false;
-  const fullScreen = false;
-  const { dimension: headerDimension, divRef: headerRef } = useDivDimensions(
-    null,
-    fullScreen,
-  );
-  const { dimension: footerDimension, divRef: footerRef } = useDivDimensions(
-    null,
-    fullScreen,
-  );
+  const fullScreen = header?.showFullScreen?.fullScreen ?? false;
+  const { divRef: headerRef } = useDivDimensions(null, fullScreen);
+  const { divRef: footerRef } = useDivDimensions(null, fullScreen);
 
   const tableMain = () => (
     <TableMainBody
@@ -89,7 +82,8 @@ const Table = ({
       ExpandingContent={ExpandingContent}
       striped={striped}
       stripedClass={stripedClass}
-      tableWrapperClass={tableWrapperClass}
+      tableWrapperClass={fullScreen ? "h-full overflow-y-auto" : tableWrapperClass}
+      wrapperClass={fullScreen ? "h-full" : undefined}
       // tables classes
       tableClass={tableClass}
       trHeadClass={trHeadClass}
@@ -101,23 +95,20 @@ const Table = ({
       tdBodyClass={tdBodyClass}
     />
   );
-  // console.log({ headerDimension }, { footerDimension });
   return (
     <FullScreenDom open={fullScreen}>
       <div
         className={twMerge(
           clsx(
-            // { "p-4 py-10": !fullScreen }, // Apply when not fullScreen
-            " shadow-2xl shadow-border border border-border rounded-[20px] gap-2 ",
-            { "p-0 m-0 space-y-0 h-screen": fullScreen }, // Apply when fullScreen
+            "shadow-2xl shadow-border border border-border rounded-[20px] gap-2",
+            fullScreen && "flex flex-col h-full rounded-none border-none shadow-none",
             layoutClass,
           ),
         )}
       >
-        <div ref={headerRef}>
+        <div ref={headerRef} className={fullScreen ? "flex-none" : ""}>
           <TableHeader
             dates={header?.dates}
-            // columnsFilter={header?.columnsFilter}
             globalFilters={header?.globalFilters}
             showColumnFilterFields={{
               columnFilterField,
@@ -133,12 +124,7 @@ const Table = ({
             columns={columns}
           />
         </div>
-        <div
-          style={{
-            height: `100vh-(${headerDimension?.height}+${footerDimension?.height})`,
-            overflow: "auto",
-          }}
-        >
+        <div className={fullScreen ? "flex-1 min-h-0 overflow-hidden" : ""}>
           <TableTabs
             tabs={tabs}
             tableMain={tableMain}
@@ -146,20 +132,17 @@ const Table = ({
             setActiveTab={setActiveTab}
             setSelectedRows={setSelectedRows}
             titleTable={titleTable}
+            className={fullScreen ? "h-full flex flex-col" : undefined}
+            contentClassName={fullScreen ? "flex-1 min-h-0" : undefined}
           />
         </div>
-
         {showPagination && pagination && (
-          <div
-            // className="w-full fixed bottom-0"
-            // style={{ height: footerDimension?.height || "auto" }}
-            ref={footerRef}
-          >
+          <div ref={footerRef} className={fullScreen ? "flex-none" : ""}>
             <Pagination
-              currentPage={pagination?.currentPage}
-              setCurrentPage={pagination?.setCurrentPage}
-              dataLimit={pagination?.dataLimit}
-              setDataLimit={pagination?.setDataLimit}
+              currentPage={pagination.currentPage}
+              setCurrentPage={pagination.setCurrentPage}
+              dataLimit={pagination.dataLimit}
+              setDataLimit={pagination.setDataLimit}
               total={total}
             />
           </div>

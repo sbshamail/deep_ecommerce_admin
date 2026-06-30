@@ -123,9 +123,7 @@ const TabTable: FC<Props> = ({
         setDataLimit,
       }}
       striped={true}
-      tableWrapperClass={
-        !fullScreen ? "!max-h-[calc(100vh-350px)] overflow-y-auto" : ""
-      }
+      tableWrapperClass="max-h-[calc(100vh-350px)] overflow-y-auto"
     />
   );
 };

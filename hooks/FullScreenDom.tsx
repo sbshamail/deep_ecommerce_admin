@@ -25,7 +25,7 @@ const FullScreenDom = ({ open, children, className }: FullScreenDomType) => {
 
   return open
     ? ReactDOM.createPortal(
-        <div className="fixed overflow-hidden top-0 left-0 w-full h-full bg-background z-modal">
+        <div className="fixed overflow-hidden top-0 left-0 w-full h-full bg-background z-9999">
           {/* ✅ Wrap with a relative div so measurements work */}
           <div className={twMerge("relative w-full h-full ", className)}>
             {children}
