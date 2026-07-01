@@ -1,4 +1,5 @@
-import React, { FC } from "react";
+"use client";
+import React, { FC, useState } from "react";
 
 import {
   Popover,
@@ -9,7 +10,6 @@ import useDivDimensions from "@/hooks/useDivDimensions";
 import { cn } from "@/lib/utils";
 import { ChildrenType, ClassNameType } from "@/types/common_types";
 import { twMerge } from "tailwind-merge";
-import { Button } from "../ui/button";
 
 export interface ContentItem {
   [key: string]: unknown;
@@ -24,48 +24,54 @@ export interface DropdownListProps {
   Trigger?: () => React.ReactNode;
   contents?: ContentItem[];
   children?: ChildrenType;
-  contentId?: string; //use for key title in contents,
+  contentId?: string;
   contentsWrapClass?: ClassNameType;
   contentClass?: ClassNameType;
 }
 
 export interface ContentListType {
   content: ContentItem;
-  contentId?: string; //use for key title in contents,
+  contentId?: string;
   contentClass?: ClassNameType;
-  contentsWrapClass?: ClassNameType;
+  onClose?: () => void;
 }
 
-// Inside Dropdown
 export const ContentList: FC<ContentListType> = ({
   content,
   contentClass,
   contentId = "title",
+  onClose,
 }) => {
-  const handleToggle = (click?: () => void) => {
-    if (click) {
-      click();
-    }
-  };
   const Icon = content?.Icon;
+  const label = content[contentId];
 
   return (
     <span
       className={twMerge(
-        `w-full   flex items-center space-x-2 cursor-pointer hover:bg-accent`,
-        ` ${contentClass}`,
-        `${content.className}`,
+        "w-full flex items-center gap-2.5 cursor-pointer px-3 py-2 text-sm",
+        "hover:bg-accent hover:text-accent-foreground transition-colors",
+        contentClass,
+        content.className as string,
       )}
-      onClick={() => handleToggle(content?.click)}
+      onClick={() => {
+        content?.click?.();
+        onClose?.();
+      }}
     >
-      {Icon && <Icon />}
-
-      <span className="text-sm px-2 py-1">
-        {content[contentId] as React.ReactNode}
-      </span>
+      {Icon && (
+        <span className="shrink-0 text-muted-foreground flex items-center">
+          <Icon size={14} />
+        </span>
+      )}
+      {label != null && (
+        <span className="flex-1 whitespace-nowrap">
+          {label as React.ReactNode}
+        </span>
+      )}
     </span>
   );
 };
+
 const DropdownList = ({
   Trigger,
   children,
@@ -74,30 +80,35 @@ const DropdownList = ({
   contentId,
   contentsWrapClass,
 }: DropdownListProps) => {
+  const [open, setOpen] = useState(false);
   const { dimension, divRef } = useDivDimensions();
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
+      {/* No asChild — PopoverTrigger is the <button>; click always works */}
       <PopoverTrigger
         ref={divRef as unknown as React.Ref<HTMLButtonElement>}
-        asChild
+        className="inline-flex items-center justify-center p-1.5 rounded-md
+          hover:bg-accent text-muted-foreground hover:text-accent-foreground
+          transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {Trigger ? Trigger() : <Button variant="outline">Open popover</Button>}
+        {Trigger ? Trigger() : null}
       </PopoverTrigger>
       <PopoverContent
-        className={cn(" m-0 p-0 max-w-max", contentsWrapClass)}
+        className={cn("m-0 p-0 max-w-max min-w-40", contentsWrapClass)}
         style={{ minWidth: dimension?.width }}
       >
-        <div className=" flex flex-col select-none w-full">
+        <div className="flex flex-col  select-none">
           {children
             ? children
             : contents?.map((content: ContentItem, key: number) => (
-                <span key={key} className="">
-                  <ContentList
-                    content={content}
-                    contentClass={content?.contentClass || contentClass}
-                    contentId={content?.contentId || contentId}
-                  />
-                </span>
+                <ContentList
+                  key={key}
+                  content={content}
+                  contentClass={content?.contentClass || contentClass}
+                  contentId={content?.contentId || contentId}
+                  onClose={() => setOpen(false)}
+                />
               ))}
         </div>
       </PopoverContent>

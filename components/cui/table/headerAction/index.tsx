@@ -33,13 +33,6 @@ interface TableHeaderActionType {
   children?: React.ReactNode;
 }
 
-/** Consistent icon-button wrapper used for all action triggers */
-const IconBtn = ({ children }: { children: React.ReactNode }) => (
-  <span className="inline-flex items-center justify-center p-1.5 rounded-md cursor-pointer hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
-    {children}
-  </span>
-);
-
 const TableHeaderAction = ({
   className,
   data,
@@ -99,11 +92,7 @@ const TableHeaderAction = ({
 
   const ExportHandle: NewDropDownMenu[] = [
     {
-      Trigger: () => (
-        <IconBtn>
-          <FileDown size={16} />
-        </IconBtn>
-      ),
+      Trigger: () => <FileDown size={16} />,
       contents: () => [
         {
           title: "Export All",
@@ -127,11 +116,7 @@ const TableHeaderAction = ({
         {/* Row-selection actions — only visible when rows are selected */}
         {menuListCondition && menuListCondition.length > 0 && (
           <DropdownList
-            Trigger={() => (
-              <IconBtn>
-                <LayoutList size={16} />
-              </IconBtn>
-            )}
+            Trigger={() => <LayoutList size={16} />}
             contents={handleActionMenuContents(menuListCondition)}
           />
         )}
