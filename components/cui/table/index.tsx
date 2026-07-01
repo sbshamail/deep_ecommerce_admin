@@ -18,6 +18,7 @@ import {
 import FullScreenTable from "./components/FullScreenTable";
 import TableContext, { useTableContext } from "./context";
 import ColumnHideShow from "./filters/ColumnHideShow";
+import ColumnManager from "./filters/ColumnManager";
 import FromToDateFilter from "./filters/FromToDateFilter";
 import GlobalFilter from "./filters/GlobalFilter";
 import HeaderFilterList from "./filters/HeaderFilterList";
@@ -240,8 +241,13 @@ const TableSearchSlot = () => {
  * Renders nothing unless showColumnFilter is set on <Table>.
  */
 const TableShowFilterSlot = () => {
-  const { allColumns, showOnlyColumns, columnFilterField, setColumnFilterFields, showColumnFilter } =
-    useTableContext();
+  const {
+    allColumns,
+    showOnlyColumns,
+    columnFilterField,
+    setColumnFilterFields,
+    showColumnFilter,
+  } = useTableContext();
   if (!showColumnFilter) return null;
   return (
     <ShowColumnFilter
@@ -257,7 +263,8 @@ const TableShowFilterSlot = () => {
  * Renders nothing unless showColumnFilter is set on <Table>.
  */
 const TableHideColumnsSlot = () => {
-  const { allColumns, showOnlyColumns, setShowOnlyColumns, showColumnFilter } = useTableContext();
+  const { allColumns, showOnlyColumns, setShowOnlyColumns, showColumnFilter } =
+    useTableContext();
   if (!showColumnFilter) return null;
   return (
     <ColumnHideShow
@@ -268,13 +275,32 @@ const TableHideColumnsSlot = () => {
   );
 };
 
-/** Shorthand: ShowFilter + HideColumns together. */
-const TableColumnFilterSlot = () => (
-  <>
-    <TableShowFilterSlot />
-    <TableHideColumnsSlot />
-  </>
-);
+/**
+ * Merged column manager — single dropdown combining visibility toggle
+ * (Eye icon, left) + drag-to-reorder (middle) + filter toggle (ListFilter, right).
+ * Renders nothing unless showColumnFilter is set on Table.
+ */
+const TableColumnFilterSlot = ({ iconSize }: { iconSize?: number }) => {
+  const {
+    allColumns,
+    showOnlyColumns,
+    setShowOnlyColumns,
+    columnFilterField,
+    setColumnFilterFields,
+    showColumnFilter,
+  } = useTableContext();
+  if (!showColumnFilter) return null;
+  return (
+    <ColumnManager
+      iconSize={iconSize}
+      allColumns={allColumns}
+      showOnlyColumns={showOnlyColumns}
+      setShowOnlyColumns={setShowOnlyColumns}
+      columnFilterField={columnFilterField}
+      setColumnFilterFields={setColumnFilterFields}
+    />
+  );
+};
 
 /** Active column-filter badge strip — place below your header toolbar. */
 const TableFilterBadgesSlot = () => {
@@ -290,10 +316,18 @@ const TableFilterBadgesSlot = () => {
 };
 
 /** Fullscreen toggle button. */
-const TableFullScreenSlot = () => {
+const TableFullScreenSlot = ({
+  className,
+  iconSize,
+}: { className?: ClassNameType; iconSize?: number } = {}) => {
   const { fullScreen, setFullScreen } = useTableContext();
   return (
-    <FullScreenTable fullScreen={fullScreen} setFullScreen={setFullScreen} />
+    <FullScreenTable
+      className={className}
+      fullScreen={fullScreen}
+      setFullScreen={setFullScreen}
+      iconSize={iconSize}
+    />
   );
 };
 
@@ -439,21 +473,21 @@ const TablePaginationSlot = ({
 // ─── Compound component export ────────────────────────────────────────────────
 
 const Table = Object.assign(TableRoot, {
-  Header:       TableHeaderSlot,
-  Dates:        TableDatesSlot,
-  Search:       TableSearchSlot,
+  Header: TableHeaderSlot,
+  Dates: TableDatesSlot,
+  Search: TableSearchSlot,
   /** Column filter picker (multi-select, stays open on click) */
-  ShowFilter:   TableShowFilterSlot,
+  ShowFilter: TableShowFilterSlot,
   /** Column visibility toggle + drag-to-reorder */
-  HideColumns:  TableHideColumnsSlot,
+  HideColumns: TableHideColumnsSlot,
   /** Shorthand: ShowFilter + HideColumns together */
   ColumnFilter: TableColumnFilterSlot,
   FilterBadges: TableFilterBadgesSlot,
-  FullScreen:   TableFullScreenSlot,
-  Action:       TableActionSlot,
-  Body:         TableBodySlot,
-  Tabs:         TableTabsSlot,
-  Pagination:   TablePaginationSlot,
+  FullScreen: TableFullScreenSlot,
+  Action: TableActionSlot,
+  Body: TableBodySlot,
+  Tabs: TableTabsSlot,
+  Pagination: TablePaginationSlot,
 });
 
 export { useTableContext };

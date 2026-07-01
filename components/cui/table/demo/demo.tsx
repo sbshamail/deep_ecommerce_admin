@@ -2,12 +2,64 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ActionMenuList,
   ColumnType,
   NewActionMenu,
   TableTabsType,
 } from "@/types/table_types";
 import { Import, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+// ─── Create modal triggered by the "Create" button ───────────────────────────
+
+const CreateModal = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 gap-1 text-xs"
+        onClick={() => setOpen(true)}
+      >
+        <Plus size={12} />
+        Create
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Entry</DialogTitle>
+            <DialogDescription>
+              Fill in the details below and click Create when you&apos;re done.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-2 space-y-2 text-sm text-muted-foreground">
+            <p>Form fields go here — connect your inputs.</p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setOpen(false)}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+// ─── Action menus ─────────────────────────────────────────────────────────────
 
 export const demoActionMenuList = (): ActionMenuList[] => [
   {
@@ -21,6 +73,7 @@ export const demoActionMenuList = (): ActionMenuList[] => [
     Icon: Plus,
     Component: <p className="text-center">This is Create Content</p>,
     visible: "unselected",
+    // modal: true,
   },
   {
     title: "Delete",
@@ -31,50 +84,27 @@ export const demoActionMenuList = (): ActionMenuList[] => [
   },
 ];
 
-// const StatusModal = ({ icon }: any): JSX.Element => {
-//   const [open, setOpen] = useState(false);
-//   const toggle = (action: boolean) => setOpen(action);
-//   return (
-//     <>
-//       <Iconify
-//         icon={icon}
-//         onClick={() => toggle(true)}
-//         className="iconPrimary"
-//       />
-//       <SimpleModal close={toggle} open={open}></SimpleModal>
-//     </>
-//   );
-// };
 export const demoNewActionMenu = (): NewActionMenu[] => [
   {
-    // dropdownMenu renders first, then render()
     dropdownMenu: [
       {
         Trigger: () => <Import size={16} />,
         contents: () => [
-          {
-            title: "Import All",
-            Icon: Import,
-          },
+          { title: "Import All", Icon: Import },
           {
             title: "Import Selected",
             Icon: Import,
-            action: () => {},
             visible: "selected",
             multiSelected: true,
           },
         ],
       },
     ],
-    // render() lets you inject any custom element (button, badge, etc.)
-    render: () => (
-      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-        <Plus size={12} />
-        Create
-      </Button>
-    ),
+    render: () => <CreateModal />,
   },
 ];
+
+// ─── Demo data ────────────────────────────────────────────────────────────────
 
 export const demoData = [
   { id: 1, name: "John Doe", age: 30, email: "john.doe@example.com" },
@@ -216,27 +246,27 @@ export const demoData2 = [
     id: 3,
     name: "Michael Johnson 2",
     age: 32,
-    email: "michael.johnson@example.com2",
+    email: "michael.johnson@example2.com",
   },
-  { id: 4, name: "Emily Davis 2", age: 28, email: "emily.davis@example.com2" },
+  { id: 4, name: "Emily Davis 2", age: 28, email: "emily.davis@example2.com" },
   {
     id: 5,
     name: "Sarah Wilson 2",
     age: 35,
-    email: "sarah.wilson@example.com2",
+    email: "sarah.wilson@example2.com",
   },
-  { id: 6, name: "David Brown 2", age: 40, email: "david.brown@example.com2" },
+  { id: 6, name: "David Brown 2", age: 40, email: "david.brown@example2.com" },
   {
     id: 7,
     name: "Chris Miller 2",
     age: 29,
-    email: "chris.miller@example.com2",
+    email: "chris.miller@example2.com",
   },
-  { id: 8, name: "Daniel Lee 2", age: 24, email: "daniel.lee@example.com2" },
-  { id: 9, name: "Anna White 2", age: 33, email: "anna.white@example.com2" },
+  { id: 8, name: "Daniel Lee 2", age: 24, email: "daniel.lee@example2.com" },
+  { id: 9, name: "Anna White 2", age: 33, email: "anna.white@example2.com" },
   {
     id: 10,
-    name: "Sophia Taylor2",
+    name: "Sophia Taylor 2",
     age: 27,
     email: "sophia.taylor@example2.com",
   },
@@ -247,16 +277,16 @@ export const demoColumns: ColumnType[] = [
   { title: "Name", accessor: "name", filterId: "name" },
   { title: "Age", accessor: "age", filterId: "age" },
   { title: "Email", accessor: "email", filterId: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
-  { title: "Email", accessor: "email" },
+  { title: "Email 2", accessor: "email" },
+  { title: "Email 3", accessor: "email" },
+  { title: "Email 4", accessor: "email" },
+  { title: "Email 5", accessor: "email" },
+  { title: "Email 6", accessor: "email" },
+  { title: "Email 7", accessor: "email" },
+  { title: "Email 8", accessor: "email" },
+  { title: "Email 9", accessor: "email" },
+  { title: "Email 10", accessor: "email" },
+  { title: "Email 11", accessor: "email" },
 ];
 
 export const demoColumns2: ColumnType[] = [
@@ -266,27 +296,27 @@ export const demoColumns2: ColumnType[] = [
   { title: "Email", accessor: "email", filterId: "email" },
 ];
 
-const ExpandingTable = ({ row }: { row: unknown }) => {
-  return <div>{JSON.stringify(row)}</div>;
-};
+const ExpandingTable = ({ row }: { row: unknown }) => (
+  <div>{JSON.stringify(row)}</div>
+);
+
 export const tabs: TableTabsType[] = [
   {
-    titleTable: <div className="">Demo</div>,
+    titleTable: "Demo Table",
     columns: demoColumns,
     data: demoData,
     total: demoData.length,
     actionMenuList: demoActionMenuList,
     newActionMenu: demoNewActionMenu,
     expandable: true,
-    // multiExpandable: true,
     ExpandingContent: ExpandingTable,
     rowId: "id",
   },
   {
     titleTable: "Demo Table 2",
-    columns: demoColumns,
+    columns: demoColumns2,
     data: demoData2,
-    total: demoData.length,
+    total: demoData2.length,
     expandable: true,
     multiExpandable: true,
     ExpandingContent: ExpandingTable,
