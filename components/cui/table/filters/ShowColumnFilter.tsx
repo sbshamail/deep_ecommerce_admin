@@ -1,5 +1,5 @@
 import { ColumnType } from "@/types/table_types";
-import { ListFilter } from "lucide-react";
+import { Check, ListFilter } from "lucide-react";
 import React from "react";
 import DropdownList, { ContentItem } from "../../DropdownList";
 
@@ -10,6 +10,7 @@ export interface ColumnFilterFieldsType {
 interface Props extends ColumnFilterFieldsType {
   columns: ColumnType[];
 }
+
 const ShowColumnFilter = ({
   columns,
   columnFilterField,
@@ -18,35 +19,35 @@ const ShowColumnFilter = ({
   const handleShowsFilter = (item: ColumnType) => {
     if (setColumnFilterFields) {
       if (columnFilterField?.some((v) => v.filterId === item.filterId)) {
-        // Remove the item if it is already included
         setColumnFilterFields((prev) =>
           prev.filter((v) => v.filterId !== item.filterId),
         );
       } else {
-        // Add the item if it is not included
         setColumnFilterFields((prev) => [...prev, item]);
       }
     }
   };
+
   const contents: ContentItem[] = columns
     .filter((column) => column.filterId)
-    .map((column) => ({
-      title: column.title,
-      click: () => handleShowsFilter(column),
-      className: `  ${
-        columnFilterField?.some((v) => v.filterId === column.filterId)
-          ? "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary) "
-          : ""
-      }`,
-    }));
+    .map((column) => {
+      const isSelected = columnFilterField?.some(
+        (v) => v.filterId === column.filterId,
+      );
+      return {
+        title: column.title,
+        click: () => handleShowsFilter(column),
+        Icon: isSelected ? Check : undefined,
+        className: isSelected ? "bg-accent text-accent-foreground font-medium" : "",
+      };
+    });
+
   return (
-    <div>
-      <DropdownList
-        Trigger={() => <ListFilter />}
-        contents={contents}
-        contentClass={`pr-8 border border-border`}
-      />
-    </div>
+    <DropdownList
+      Trigger={() => <ListFilter size={16} />}
+      contents={contents}
+      closeOnSelect={false}
+    />
   );
 };
 

@@ -19,6 +19,8 @@ export interface ActionMenuList {
   action?: (ctx: ActionType) => void;
   deleted?: (ctx: ActionType) => void;
   Component?: ((ctx: ActionType) => JSX.Element) | JSX.Element;
+  /** Open Component in a centered Dialog instead of a side Sheet */
+  modal?: boolean;
 }
 
 export interface RenderType {

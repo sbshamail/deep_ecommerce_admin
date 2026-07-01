@@ -2,6 +2,19 @@ import React, { useState } from "react";
 
 import { actionMenuContents, filterActionMenuCondition } from "./function";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuList,
@@ -12,7 +25,6 @@ import {
   NewDropDownMenu,
 } from "@/types/table_types";
 import { FileDown, LayoutList } from "lucide-react";
-import Drawer from "../../drawer/Drawer";
 import DropdownList from "../../DropdownList";
 import {
   ExportCsvRow,
@@ -29,9 +41,14 @@ interface TableHeaderActionType {
   removeSelection: () => void;
   columns: ColumnType[];
   className?: ClassNameType;
-  /** Slot for injecting extra elements (e.g. custom buttons) at the end of the bar */
   children?: React.ReactNode;
 }
+
+const emptyContent: ActionStateTypes = {
+  Component: <></>,
+  title: "",
+  multiSelected: false,
+};
 
 const TableHeaderAction = ({
   className,
@@ -44,36 +61,35 @@ const TableHeaderAction = ({
   removeSelection,
   children,
 }: TableHeaderActionType) => {
-  const [drawerToggle, setDrawerToggle] = useState(false);
-  const [drawerContent, setDrawerContent] = useState<ActionStateTypes>({
-    Component: <></>,
-    title: "",
-    multiSelected: false,
-  });
+  // Sheet (side drawer) state
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetContent, setSheetContent] = useState<ActionStateTypes>(emptyContent);
 
-  const toggleDrawer = (toggle?: boolean) => {
-    setDrawerToggle(toggle ? toggle : !drawerToggle);
-  };
+  // Dialog (centered modal) state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogContent, setDialogContent] = useState<ActionStateTypes>(emptyContent);
 
-  const handleActionMenuContents = (
-    listCondition: ActionMenuList[] | undefined,
-  ) =>
+  const toggleSheet = (open?: boolean) =>
+    setSheetOpen((prev) => (open !== undefined ? open : !prev));
+
+  const toggleDialog = (open?: boolean) =>
+    setDialogOpen((prev) => (open !== undefined ? open : !prev));
+
+  const handleActionMenuContents = (listCondition: ActionMenuList[] | undefined) =>
     actionMenuContents(
       listCondition,
       selectedRows,
       setSelectedRows,
-      toggleDrawer,
-      setDrawerContent,
+      () => toggleSheet(),
+      setSheetContent,
       removeSelection,
+      () => toggleDialog(),
+      setDialogContent,
     );
 
-  /** Renders a list of NewDropDownMenu items as DropdownList buttons */
   const renderDropdowns = (actionMenu: NewDropDownMenu[]): React.ReactNode[] =>
     actionMenu.map((menu, index) => {
-      const listCondition = filterActionMenuCondition(
-        menu.contents(),
-        selectedRows,
-      );
+      const listCondition = filterActionMenuCondition(menu.contents(), selectedRows);
       if (!listCondition || listCondition.length === 0) return null;
       return (
         <DropdownList
@@ -85,10 +101,7 @@ const TableHeaderAction = ({
     });
 
   const mainActionMenu = actionMenuList ? actionMenuList() : undefined;
-  const menuListCondition = filterActionMenuCondition(
-    mainActionMenu,
-    selectedRows,
-  );
+  const menuListCondition = filterActionMenuCondition(mainActionMenu, selectedRows);
 
   const ExportHandle: NewDropDownMenu[] = [
     {
@@ -110,10 +123,14 @@ const TableHeaderAction = ({
     },
   ];
 
+  const renderComponent = (state: ActionStateTypes) =>
+    typeof state.Component === "function"
+      ? state.Component({ removeSelection, selectedRows, setSelectedRows })
+      : state.Component;
+
   return (
     <>
       <div className={`flex items-center gap-1 ${className ?? ""}`}>
-        {/* Row-selection actions — only visible when rows are selected */}
         {menuListCondition && menuListCondition.length > 0 && (
           <DropdownList
             Trigger={() => <LayoutList size={16} />}
@@ -121,7 +138,6 @@ const TableHeaderAction = ({
           />
         )}
 
-        {/* Consumer-supplied action slots — dropdowns render first, then custom render */}
         {newActionMenu &&
           newActionMenu().map((item, index) => (
             <React.Fragment key={index}>
@@ -130,26 +146,29 @@ const TableHeaderAction = ({
             </React.Fragment>
           ))}
 
-        {/* Built-in export dropdown */}
         {renderDropdowns(ExportHandle)}
-
-        {/* Custom slot: pass children to add any extra buttons/elements */}
         {children}
       </div>
 
-      <Drawer
-        open={drawerToggle}
-        close={toggleDrawer}
-        title={drawerContent.title}
-      >
-        {typeof drawerContent.Component === "function"
-          ? drawerContent.Component({
-              removeSelection,
-              selectedRows,
-              setSelectedRows,
-            })
-          : drawerContent.Component}
-      </Drawer>
+      {/* Side drawer — default for Component items */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>{sheetContent.title}</SheetTitle>
+          </SheetHeader>
+          <SheetBody>{renderComponent(sheetContent)}</SheetBody>
+        </SheetContent>
+      </Sheet>
+
+      {/* Centered dialog — for items with modal: true */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogContent.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">{renderComponent(dialogContent)}</div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

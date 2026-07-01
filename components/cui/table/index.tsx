@@ -236,34 +236,45 @@ const TableSearchSlot = () => {
 };
 
 /**
- * Column-visibility toggle + filter picker.
+ * Column filter picker (multi-select — stays open while picking).
  * Renders nothing unless showColumnFilter is set on <Table>.
  */
-const TableColumnFilterSlot = () => {
-  const {
-    allColumns,
-    showOnlyColumns,
-    setShowOnlyColumns,
-    columnFilterField,
-    setColumnFilterFields,
-    showColumnFilter,
-  } = useTableContext();
+const TableShowFilterSlot = () => {
+  const { allColumns, showOnlyColumns, columnFilterField, setColumnFilterFields, showColumnFilter } =
+    useTableContext();
   if (!showColumnFilter) return null;
   return (
-    <>
-      <ShowColumnFilter
-        columns={showOnlyColumns ?? allColumns}
-        columnFilterField={columnFilterField}
-        setColumnFilterFields={setColumnFilterFields}
-      />
-      <ColumnHideShow
-        allColumns={allColumns}
-        showOnlyColumns={showOnlyColumns}
-        setShowOnlyColumns={setShowOnlyColumns}
-      />
-    </>
+    <ShowColumnFilter
+      columns={showOnlyColumns ?? allColumns}
+      columnFilterField={columnFilterField}
+      setColumnFilterFields={setColumnFilterFields}
+    />
   );
 };
+
+/**
+ * Column visibility toggle (drag to reorder, click to hide/show).
+ * Renders nothing unless showColumnFilter is set on <Table>.
+ */
+const TableHideColumnsSlot = () => {
+  const { allColumns, showOnlyColumns, setShowOnlyColumns, showColumnFilter } = useTableContext();
+  if (!showColumnFilter) return null;
+  return (
+    <ColumnHideShow
+      allColumns={allColumns}
+      showOnlyColumns={showOnlyColumns}
+      setShowOnlyColumns={setShowOnlyColumns}
+    />
+  );
+};
+
+/** Shorthand: ShowFilter + HideColumns together. */
+const TableColumnFilterSlot = () => (
+  <>
+    <TableShowFilterSlot />
+    <TableHideColumnsSlot />
+  </>
+);
 
 /** Active column-filter badge strip — place below your header toolbar. */
 const TableFilterBadgesSlot = () => {
@@ -428,16 +439,21 @@ const TablePaginationSlot = ({
 // ─── Compound component export ────────────────────────────────────────────────
 
 const Table = Object.assign(TableRoot, {
-  Header: TableHeaderSlot,
-  Dates: TableDatesSlot,
-  Search: TableSearchSlot,
+  Header:       TableHeaderSlot,
+  Dates:        TableDatesSlot,
+  Search:       TableSearchSlot,
+  /** Column filter picker (multi-select, stays open on click) */
+  ShowFilter:   TableShowFilterSlot,
+  /** Column visibility toggle + drag-to-reorder */
+  HideColumns:  TableHideColumnsSlot,
+  /** Shorthand: ShowFilter + HideColumns together */
   ColumnFilter: TableColumnFilterSlot,
   FilterBadges: TableFilterBadgesSlot,
-  FullScreen: TableFullScreenSlot,
-  Action: TableActionSlot,
-  Body: TableBodySlot,
-  Tabs: TableTabsSlot,
-  Pagination: TablePaginationSlot,
+  FullScreen:   TableFullScreenSlot,
+  Action:       TableActionSlot,
+  Body:         TableBodySlot,
+  Tabs:         TableTabsSlot,
+  Pagination:   TablePaginationSlot,
 });
 
 export { useTableContext };

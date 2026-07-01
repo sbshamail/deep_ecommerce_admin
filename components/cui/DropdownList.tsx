@@ -27,6 +27,8 @@ export interface DropdownListProps {
   contentId?: string;
   contentsWrapClass?: ClassNameType;
   contentClass?: ClassNameType;
+  /** When false the popover stays open after an item is clicked (for multi-select). Default: true */
+  closeOnSelect?: boolean;
 }
 
 export interface ContentListType {
@@ -79,6 +81,7 @@ const DropdownList = ({
   contentClass,
   contentId,
   contentsWrapClass,
+  closeOnSelect = true,
 }: DropdownListProps) => {
   const [open, setOpen] = useState(false);
   const { dimension, divRef } = useDivDimensions();
@@ -107,7 +110,7 @@ const DropdownList = ({
                   content={content}
                   contentClass={content?.contentClass || contentClass}
                   contentId={content?.contentId || contentId}
-                  onClose={() => setOpen(false)}
+                  onClose={closeOnSelect ? () => setOpen(false) : undefined}
                 />
               ))}
         </div>
