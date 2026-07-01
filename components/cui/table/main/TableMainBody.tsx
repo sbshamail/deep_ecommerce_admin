@@ -196,7 +196,7 @@ const TableMainBody = ({
   );
   return (
     <div className={wrapperClass}>
-      <main className={`relative ${tableWrapperClass} `}>
+      <main className={`theme-table-scroll relative ${tableWrapperClass} `}>
         <div ref={divRef} className="select-none">
           <table
             className={twMerge(

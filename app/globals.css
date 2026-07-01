@@ -49,6 +49,11 @@
 }
 
 :root {
+  --scrollbar-size: 8px;
+  --scrollbar-table-size: 6px;
+  --scrollbar-thumb: color-mix(in oklch, var(--primary) 78%, var(--foreground));
+  --scrollbar-thumb-hover: var(--primary);
+  --scrollbar-track: color-mix(in oklch, var(--muted) 82%, transparent);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -119,11 +124,41 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 2px solid var(--scrollbar-track);
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  *::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
+  }
+  .theme-table-scroll {
+    scrollbar-width: thin;
+  }
+  .theme-table-scroll::-webkit-scrollbar {
+    width: var(--scrollbar-table-size);
+    height: var(--scrollbar-table-size);
+  }
+  .theme-table-scroll::-webkit-scrollbar-thumb {
+    border-width: 1px;
   }
 }
