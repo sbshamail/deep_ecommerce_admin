@@ -27,21 +27,21 @@ const TableTabs = ({
     <div className={twMerge("", className)}>
       {tabs && tabs.length > 0 && setActiveTab ? (
         <>
-          <div className="flex text-center items-center justify-between flex-none">
+          <div className="flex text-center items-center flex-none border-b border-border">
             {tabs.map((item, index) => {
               const isActive = index === activeTab;
               return (
                 item.titleTable && (
                   <div
                     key={index}
-                    className={`relative cursor-pointer text-center w-full border-none font-semibold hover:bg-primary/90 select-none ${
-                      isActive
+                    className={`relative cursor-pointer text-center w-full font-semibold select-none transition-colors
+                      ${isActive
                         ? "bg-primary text-primary-foreground"
-                        : "bg-primary/40 text-foreground/50"
-                    }`}
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
                     onClick={() => setActiveTab(index)}
                   >
-                    <div className="text-[0.7em] py-1">{item.titleTable}</div>
+                    <div className="text-[0.7em] py-1.5">{item.titleTable}</div>
                   </div>
                 )
               );
