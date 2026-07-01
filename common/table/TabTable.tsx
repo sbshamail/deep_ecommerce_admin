@@ -20,6 +20,7 @@ const TabTable: FC<Props> = ({ tabs = [{ data: [], columns: [] }] }) => (
         <div className="flex items-center gap-1">
           <Table.Search />
           <Table.ColumnFilter />
+          <Table.Density />
           <Table.FullScreen iconSize={16} />
         </div>
       </div>

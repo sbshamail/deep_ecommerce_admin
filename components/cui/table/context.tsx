@@ -1,5 +1,7 @@
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
 
+export type TableDensity = "compact" | "default" | "comfortable";
+
 import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuListType,
@@ -58,6 +60,10 @@ export interface TableContextValue extends TableMainClassesType {
   // Fullscreen
   fullScreen: boolean;
   setFullScreen: Dispatch<SetStateAction<boolean>>;
+
+  // Density
+  density: TableDensity;
+  setDensity: Dispatch<SetStateAction<TableDensity>>;
 
   // Table config flags
   showColumnFilter?: boolean;

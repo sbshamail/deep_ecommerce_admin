@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import FullScreenDom from "@/hooks/FullScreenDom";
+import { AlignJustify, Check } from "lucide-react";
 import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuListType,
@@ -15,8 +16,9 @@ import {
   TableTabsType,
 } from "@/types/table_types";
 
+import DropdownList from "../DropdownList";
 import FullScreenTable from "./components/FullScreenTable";
-import TableContext, { useTableContext } from "./context";
+import TableContext, { TableDensity, useTableContext } from "./context";
 import ColumnHideShow from "./filters/ColumnHideShow";
 import ColumnManager from "./filters/ColumnManager";
 import FromToDateFilter from "./filters/FromToDateFilter";
@@ -91,6 +93,7 @@ const TableRoot = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [dataLimit, setDataLimit] = useState(20);
   const [fullScreen, setFullScreen] = useState(false);
+  const [density, setDensity] = useState<TableDensity>("default");
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilter, setColumnFilter] = useState<ColumnFilterType[]>([]);
   const [columnFilterField, setColumnFilterFields] = useState<ColumnType[]>([]);
@@ -156,6 +159,8 @@ const TableRoot = ({
     setToDate,
     fullScreen,
     setFullScreen,
+    density,
+    setDensity,
     showColumnFilter,
     rowId: curRowId,
     striped,
@@ -360,6 +365,15 @@ const TableActionSlot = ({
   );
 };
 
+const densityInsideClass: Record<TableDensity, string> = {
+  compact:
+    "border border-card-foreground/10 shadow-sm shadow-accent text-[0.8em] text-left px-2 py-1",
+  default:
+    "border border-card-foreground/10 shadow-sm shadow-accent text-[0.9em] text-left p-3",
+  comfortable:
+    "border border-card-foreground/10 shadow-sm shadow-accent text-[0.95em] text-left px-4 py-4",
+};
+
 // Shared table renderer used by both Body and Tabs slots
 const BodyRenderer = () => {
   const c = useTableContext();
@@ -383,7 +397,7 @@ const BodyRenderer = () => {
       trHeadClass={c.trHeadClass}
       tHeadClass={c.tHeadClass}
       thHeadClass={c.thHeadClass}
-      tableInsideClass={c.tableInsideClass}
+      tableInsideClass={c.tableInsideClass ?? densityInsideClass[c.density]}
       tBodyClass={c.tBodyClass}
       trBodyClass={c.trBodyClass}
       tdBodyClass={c.tdBodyClass}
@@ -445,6 +459,37 @@ const TableTabsSlot = ({ className }: { className?: ClassNameType } = {}) => {
   );
 };
 
+/**
+ * Density toggle — compact / default / comfortable.
+ * Places a small dropdown in your header toolbar.
+ */
+const TableDensitySlot = ({ iconSize = 16 }: { iconSize?: number } = {}) => {
+  const { density, setDensity } = useTableContext();
+  return (
+    <DropdownList
+      Trigger={() => <AlignJustify size={iconSize} />}
+      contentsWrapClass="w-40"
+      contents={[
+        {
+          title: "Compact",
+          click: () => setDensity("compact"),
+          Icon: density === "compact" ? Check : undefined,
+        },
+        {
+          title: "Default",
+          click: () => setDensity("default"),
+          Icon: density === "default" ? Check : undefined,
+        },
+        {
+          title: "Comfortable",
+          click: () => setDensity("comfortable"),
+          Icon: density === "comfortable" ? Check : undefined,
+        },
+      ]}
+    />
+  );
+};
+
 /** Pagination bar. Wrap in any flex div for custom left/right positioning. */
 const TablePaginationSlot = ({
   className,
@@ -484,6 +529,8 @@ const Table = Object.assign(TableRoot, {
   ColumnFilter: TableColumnFilterSlot,
   FilterBadges: TableFilterBadgesSlot,
   FullScreen: TableFullScreenSlot,
+  /** Row density toggle: compact / default / comfortable */
+  Density: TableDensitySlot,
   Action: TableActionSlot,
   Body: TableBodySlot,
   Tabs: TableTabsSlot,

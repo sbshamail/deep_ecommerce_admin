@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ClassNameType } from "@/types/common_types";
-import { Maximize } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 export interface FullScreenTableType {
   fullScreen?: boolean;
@@ -14,12 +14,13 @@ const FullScreenTable = ({
   iconSize = 16,
   className,
 }: FullScreenTableType) => {
+  const Icon = fullScreen ? Minimize2 : Maximize2;
   return (
     setFullScreen && (
       <div>
-        <Maximize
+        <Icon
           onClick={() => setFullScreen(!fullScreen)}
-          className={cn(" hover:scale-105 ", className)}
+          className={cn("hover:scale-105 cursor-pointer", className)}
           size={iconSize}
         />
       </div>
