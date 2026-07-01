@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import useDivDimensions from "@/hooks/useDivDimensions";
 import { cn } from "@/lib/utils";
 import { ChildrenType, ClassNameType } from "@/types/common_types";
 import { twMerge } from "tailwind-merge";
@@ -47,6 +48,7 @@ export const ContentList: FC<ContentListType> = ({
     }
   };
   const Icon = content?.Icon;
+
   return (
     <span
       className={twMerge(
@@ -72,12 +74,19 @@ const DropdownList = ({
   contentId,
   contentsWrapClass,
 }: DropdownListProps) => {
+  const { dimension, divRef } = useDivDimensions();
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger
+        ref={divRef as unknown as React.Ref<HTMLButtonElement>}
+        asChild
+      >
         {Trigger ? Trigger() : <Button variant="outline">Open popover</Button>}
       </PopoverTrigger>
-      <PopoverContent className={cn(" m-0 p-0", contentsWrapClass)}>
+      <PopoverContent
+        className={cn(" m-0 p-0 max-w-max", contentsWrapClass)}
+        style={{ minWidth: dimension?.width }}
+      >
         <div className=" flex flex-col select-none w-full">
           {children
             ? children

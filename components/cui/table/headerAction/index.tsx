@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import { actionMenuContents, filterActionMenuCondition } from "./function";
 
+import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuList,
   ActionMenuListType,
@@ -10,7 +11,7 @@ import {
   NewActionMenu,
   NewDropDownMenu,
 } from "@/types/table_types";
-import { ExternalLink, FileDown } from "lucide-react";
+import { FileDown, LayoutList } from "lucide-react";
 import Drawer from "../../drawer/Drawer";
 import DropdownList from "../../DropdownList";
 import {
@@ -24,11 +25,23 @@ interface TableHeaderActionType {
   actionMenuList?: ActionMenuListType;
   selectedRows: Record<string, unknown>[];
   setSelectedRows: (rows: Record<string, unknown>[]) => void;
-  newActionMenu?: ({}) => NewActionMenu[];
+  newActionMenu?: () => NewActionMenu[];
   removeSelection: () => void;
   columns: ColumnType[];
+  className?: ClassNameType;
+  /** Slot for injecting extra elements (e.g. custom buttons) at the end of the bar */
+  children?: React.ReactNode;
 }
+
+/** Consistent icon-button wrapper used for all action triggers */
+const IconBtn = ({ children }: { children: React.ReactNode }) => (
+  <span className="inline-flex items-center justify-center p-1.5 rounded-md cursor-pointer hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
+    {children}
+  </span>
+);
+
 const TableHeaderAction = ({
+  className,
   data,
   columns,
   actionMenuList,
@@ -36,6 +49,7 @@ const TableHeaderAction = ({
   setSelectedRows,
   newActionMenu,
   removeSelection,
+  children,
 }: TableHeaderActionType) => {
   const [drawerToggle, setDrawerToggle] = useState(false);
   const [drawerContent, setDrawerContent] = useState<ActionStateTypes>({
@@ -50,8 +64,8 @@ const TableHeaderAction = ({
 
   const handleActionMenuContents = (
     listCondition: ActionMenuList[] | undefined,
-  ) => {
-    return actionMenuContents(
+  ) =>
+    actionMenuContents(
       listCondition,
       selectedRows,
       setSelectedRows,
@@ -59,91 +73,85 @@ const TableHeaderAction = ({
       setDrawerContent,
       removeSelection,
     );
-  };
-  //new Action Menu
-  const newActionMenuRender = (
-    actionMenu: NewDropDownMenu[],
-  ): React.ReactNode[] => {
-    return actionMenu.map((menu, index) => {
-      const contents = menu.contents({});
-      const listCondition = filterActionMenuCondition(contents, selectedRows);
+
+  /** Renders a list of NewDropDownMenu items as DropdownList buttons */
+  const renderDropdowns = (actionMenu: NewDropDownMenu[]): React.ReactNode[] =>
+    actionMenu.map((menu, index) => {
+      const listCondition = filterActionMenuCondition(
+        menu.contents(),
+        selectedRows,
+      );
+      if (!listCondition || listCondition.length === 0) return null;
       return (
-        listCondition &&
-        listCondition.length > 0 && (
-          <div key={index}>
-            <DropdownList
-              Trigger={menu?.Trigger}
-              contents={handleActionMenuContents(listCondition)}
-            />
-          </div>
-        )
+        <DropdownList
+          key={index}
+          Trigger={menu.Trigger}
+          contents={handleActionMenuContents(listCondition)}
+        />
       );
     });
-  };
 
-  // main action
-  const mainActionMenu = actionMenuList ? actionMenuList({}) : undefined;
+  const mainActionMenu = actionMenuList ? actionMenuList() : undefined;
   const menuListCondition = filterActionMenuCondition(
     mainActionMenu,
     selectedRows,
   );
-  const singleIconAction = (
-    action: (props: Record<string, unknown> | null) => React.ReactNode,
-  ) => {
-    return (
-      <div>
-        <div>{action({})}</div>
-      </div>
-    );
-  };
+
   const ExportHandle: NewDropDownMenu[] = [
     {
-      Trigger: () => <FileDown />,
-      contents: ({}: Record<string, unknown>) => [
+      Trigger: () => (
+        <IconBtn>
+          <FileDown size={16} />
+        </IconBtn>
+      ),
+      contents: () => [
         {
           title: "Export All",
-          icon: "solar:file-download-bold",
-          action: () => {
-            handleExportCsv(data as ExportCsvRow[]);
-          },
+          Icon: FileDown,
+          action: () => handleExportCsv(data as ExportCsvRow[]),
         },
         {
-          title: " Export Selected",
-          Trigger: () => <span>solar:file-download-bold</span>,
-          action: () => {
-            handleArrangeCsvData(selectedRows, columns);
-          },
+          title: "Export Selected",
+          Icon: FileDown,
+          action: () => handleArrangeCsvData(selectedRows, columns),
           visible: "selected",
           multiSelected: true,
         },
       ],
     },
   ];
+
   return (
     <>
-      <div>
-        <div className="flex items-center relative">
-          {menuListCondition && menuListCondition.length > 0 && (
-            <DropdownList
-              Trigger={() => <ExternalLink />}
-              contents={handleActionMenuContents(menuListCondition)}
-            />
-          )}
-          {newActionMenu &&
-            newActionMenu({}).map((item, index) => {
-              return (
-                <React.Fragment key={index}>
-                  {item.action && item.Icon
-                    ? singleIconAction(item.action)
-                    : item.dropdownMenu
-                      ? newActionMenuRender(item.dropdownMenu)
-                      : null}
-                </React.Fragment>
-              );
-            })}
-          <React.Fragment>{newActionMenuRender(ExportHandle)}</React.Fragment>
-        </div>
+      <div className={`flex items-center gap-1 ${className ?? ""}`}>
+        {/* Row-selection actions — only visible when rows are selected */}
+        {menuListCondition && menuListCondition.length > 0 && (
+          <DropdownList
+            Trigger={() => (
+              <IconBtn>
+                <LayoutList size={16} />
+              </IconBtn>
+            )}
+            contents={handleActionMenuContents(menuListCondition)}
+          />
+        )}
+
+        {/* Consumer-supplied action slots — dropdowns render first, then custom render */}
+        {newActionMenu &&
+          newActionMenu().map((item, index) => (
+            <React.Fragment key={index}>
+              {item.dropdownMenu && renderDropdowns(item.dropdownMenu)}
+              {item.render && item.render()}
+            </React.Fragment>
+          ))}
+
+        {/* Built-in export dropdown */}
+        {renderDropdowns(ExportHandle)}
+
+        {/* Custom slot: pass children to add any extra buttons/elements */}
+        {children}
       </div>
+
       <Drawer
         open={drawerToggle}
         close={toggleDrawer}

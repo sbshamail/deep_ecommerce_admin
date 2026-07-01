@@ -5,19 +5,20 @@ import { ClassNameType } from "./common_types";
 //   selectedRows: Record<string, any>[];
 // }
 
-interface ActionType {
+export interface ActionType {
   selectedRows: Record<string, unknown>[];
   setSelectedRows: (rows: Record<string, unknown>[]) => void;
   removeSelection: () => void;
 }
+
 export interface ActionMenuList {
   title: string;
-
-  Component?: ((props: ActionType) => JSX.Element) | JSX.Element;
+  Icon?: React.ElementType;
   visible?: "selected" | "unselected";
   multiSelected?: boolean;
-  deleted?: (props: ActionType) => void | JSX.Element;
-  action?: (props: ActionType) => void | JSX.Element;
+  action?: (ctx: ActionType) => void;
+  deleted?: (ctx: ActionType) => void;
+  Component?: ((ctx: ActionType) => JSX.Element) | JSX.Element;
 }
 
 export interface RenderType {
@@ -43,12 +44,11 @@ export interface ColumnFilterType {
 }
 export interface NewDropDownMenu {
   Trigger: () => React.ReactNode;
-  contents: (props: Record<string, unknown>) => ActionMenuList[];
+  contents: () => ActionMenuList[];
 }
 export interface NewActionMenu {
   dropdownMenu?: NewDropDownMenu[];
-  Icon?: React.ReactNode;
-  action?: (props: Record<string, unknown> | null) => React.ReactNode;
+  render?: () => React.ReactNode;
 }
 export interface ActionStateTypes {
   Component: ((props: ActionType) => JSX.Element) | JSX.Element;
@@ -60,8 +60,8 @@ export type ExpandingTableType = (props: {
   row: Record<string, unknown>;
   index: number;
 }) => React.ReactNode;
-export type ActionMenuListType = ({}) => ActionMenuList[];
-export type NewActionMenuType = ({}) => NewActionMenu[];
+export type ActionMenuListType = () => ActionMenuList[];
+export type NewActionMenuType = () => NewActionMenu[];
 
 export interface TableMainClassesType {
   tableClass?: ClassNameType;

@@ -1,14 +1,14 @@
 "use client";
+import Table from "@/components/cui/table";
+import useTableTabs from "@/components/cui/table/components/useTabsTable";
+import TableHeaderAction from "@/components/cui/table/headerAction";
+import { ColumnFilterType, TableTabsType } from "@/types/table_types";
 import { FC, useMemo, useState } from "react";
 
 interface Props {
   tabs?: TableTabsType[];
 }
 
-import Table from "@/components/cui/table";
-import useTableTabs from "@/components/cui/table/components/useTabsTable";
-import TableHeaderAction from "@/components/cui/table/headerAction";
-import { ColumnFilterType, TableTabsType } from "@/types/table_types";
 const TabTable: FC<Props> = ({
   tabs = [
     {
@@ -61,10 +61,10 @@ const TabTable: FC<Props> = ({
 
   // handle rendering table on action
 
-  // header action left side
   const headerAction = () => {
     return (
       <TableHeaderAction
+        className="w-full"
         data={data}
         columns={columns}
         removeSelection={() => {}}

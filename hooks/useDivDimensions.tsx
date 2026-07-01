@@ -14,12 +14,12 @@ export interface dimensionProps {
   offsetLeft: number;
 }
 type EventType = "resize" | "scroll";
-const useDivDimensions = (
+const useDivDimensions = <T extends HTMLElement = HTMLDivElement>(
   events?: EventType[] | null,
   dependency?: unknown,
 ) => {
   const [dimension, setDimension] = useState<dimensionProps | null>(null);
-  const divRef = useRef<HTMLDivElement>(null);
+  const divRef = useRef<T>(null);
 
   const updateDimensions = useCallback(() => {
     if (divRef.current) {

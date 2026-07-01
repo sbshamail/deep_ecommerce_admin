@@ -57,6 +57,7 @@ export const actionMenuContents = (
   listCondition?.map((item, index) => ({
     key: index,
     title: item.title,
+    Icon: item?.Icon,
 
     click: item?.action
       ? () =>

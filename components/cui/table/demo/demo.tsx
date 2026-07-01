@@ -1,30 +1,31 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   ActionMenuList,
   ColumnType,
   NewActionMenu,
   TableTabsType,
 } from "@/types/table_types";
-import { Import } from "lucide-react";
+import { Import, Pencil, Plus, Trash2 } from "lucide-react";
 
-export const demoActionMenuList = ({}): ActionMenuList[] => [
+export const demoActionMenuList = (): ActionMenuList[] => [
   {
     title: "Edit",
-    // icon: 'tabler:edit',
-    Component: ({}) => <p className="text-center">This is Edit Content</p>,
+    Icon: Pencil,
+    Component: () => <p className="text-center">This is Edit Content</p>,
     visible: "selected",
   },
   {
     title: "Create",
-    // icon: 'tabler:plus',
+    Icon: Plus,
     Component: <p className="text-center">This is Create Content</p>,
     visible: "unselected",
   },
   {
     title: "Delete",
-    // icon: 'tabler:minus',
-    deleted: ({}) => {},
+    Icon: Trash2,
+    deleted: () => {},
     visible: "selected",
     multiSelected: true,
   },
@@ -44,19 +45,20 @@ export const demoActionMenuList = ({}): ActionMenuList[] => [
 //     </>
 //   );
 // };
-export const demoNewActionMenu = ({}): NewActionMenu[] => [
+export const demoNewActionMenu = (): NewActionMenu[] => [
   {
+    // dropdownMenu renders first, then render()
     dropdownMenu: [
       {
-        Trigger: () => <Import />,
-        contents: ({}: Record<string, unknown>) => [
+        Trigger: () => <Import size={16} />,
+        contents: () => [
           {
-            title: "Export All",
-            // action: () => {},
-            Component: <></>,
+            title: "Import All",
+            Icon: Import,
           },
           {
-            title: " Export Selected",
+            title: "Import Selected",
+            Icon: Import,
             action: () => {},
             visible: "selected",
             multiSelected: true,
@@ -64,11 +66,14 @@ export const demoNewActionMenu = ({}): NewActionMenu[] => [
         ],
       },
     ],
+    // render() lets you inject any custom element (button, badge, etc.)
+    render: () => (
+      <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
+        <Plus size={12} />
+        Create
+      </Button>
+    ),
   },
-  // {
-  //   icon: "solar:file-download-bold",
-  //   action: StatusModal,
-  // },
 ];
 
 export const demoData = [
