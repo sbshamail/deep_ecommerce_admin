@@ -15,12 +15,12 @@ const FromToDateFilter: FC<FromToDateFilterTypes> = ({
   setToDate = () => {},
 }) => {
   return (
-    <div className="flex  items-center select-none">
-      <div>
-        <CalendarDays />
+    <div className="flex min-w-0 flex-wrap items-center gap-1 select-none">
+      <div className="shrink-0 text-muted-foreground">
+        <CalendarDays size={18} />
       </div>
       <InputDatePicker selectedDate={fromDate} setSelectedDate={setFromDate} />
-      -
+      <span className="text-muted-foreground">-</span>
       <InputDatePicker selectedDate={toDate} setSelectedDate={setToDate} />
     </div>
   );

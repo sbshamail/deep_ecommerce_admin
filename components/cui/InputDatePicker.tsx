@@ -22,9 +22,11 @@ const InputDatePicker = ({
         <Button
           variant="outline"
           id="date"
-          className="justify-start font-normal"
+          className="w-32 justify-start overflow-hidden font-normal"
         >
-          {selectedDate ? selectedDate.toLocaleDateString() : "Select date"}
+          <span className="truncate">
+            {selectedDate ? selectedDate.toLocaleDateString() : "Select date"}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">

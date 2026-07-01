@@ -185,7 +185,7 @@ const TableRoot = ({
         <div
           className={twMerge(
             clsx(
-              "shadow-2xl shadow-border border border-border rounded-[20px]",
+              "min-w-0 overflow-hidden rounded-lg border border-border bg-background shadow-sm shadow-border",
               fullScreen &&
                 "flex flex-col h-full rounded-none border-none shadow-none",
               className,
@@ -390,7 +390,7 @@ const BodyRenderer = () => {
       multiExpandable={c.multiExpandable}
       ExpandingContent={c.ExpandingContent}
       tableWrapperClass={
-        c.fullScreen ? "h-full overflow-y-auto" : c.tableWrapperClass
+        c.fullScreen ? "h-full overflow-auto" : c.tableWrapperClass
       }
       wrapperClass={c.fullScreen ? "h-full" : undefined}
       tableClass={c.tableClass}
@@ -411,7 +411,7 @@ const TableBodySlot = ({ className }: { className?: ClassNameType } = {}) => {
   return (
     <div
       className={twMerge(
-        clsx(fullScreen && "flex-1 min-h-0 overflow-hidden"),
+        clsx("min-w-0", fullScreen && "flex-1 min-h-0 overflow-hidden"),
         className,
       )}
     >
@@ -428,17 +428,20 @@ const TableTabsSlot = ({ className }: { className?: ClassNameType } = {}) => {
   return (
     <div
       className={twMerge(
-        clsx(fullScreen && "flex-1 min-h-0 overflow-hidden flex flex-col"),
+        clsx(
+          "min-w-0",
+          fullScreen && "flex flex-1 min-h-0 flex-col overflow-hidden",
+        ),
       )}
     >
       {hasTabs && (
-        <div className="flex text-center items-center flex-none border-b border-border ">
+        <div className="flex flex-none items-center overflow-x-auto border-b border-border text-center">
           {tabs!.map((tab, index) =>
             tab.titleTable ? (
               <div
                 key={index}
                 className={twMerge(
-                  "relative cursor-pointer text-center w-full font-semibold select-none transition-colors text-[0.7em] ",
+                  "relative min-w-32 flex-1 cursor-pointer select-none text-center text-[0.7em] font-semibold transition-colors",
                   className,
                   index === activeTab
                     ? "bg-primary text-primary-foreground"
@@ -452,7 +455,7 @@ const TableTabsSlot = ({ className }: { className?: ClassNameType } = {}) => {
           )}
         </div>
       )}
-      <div className={fullScreen ? "flex-1 min-h-0" : ""}>
+      <div className={fullScreen ? "min-h-0 min-w-0 flex-1" : "min-w-0"}>
         <BodyRenderer />
       </div>
     </div>

@@ -16,11 +16,12 @@ const GlobalFilter = ({ globalFilter, setGlobalFilter }: GlobalFilterType) => {
     }
   };
   return (
-    <ButtonGroup>
+    <ButtonGroup className="w-full min-w-0 sm:w-64">
       <Button variant="outline" aria-label="Search">
         <SearchIcon />
       </Button>
       <Input
+        className="min-w-0"
         placeholder="Search..."
         onChange={handleGlobalFilter}
         value={globalFilter}

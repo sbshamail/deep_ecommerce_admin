@@ -8,12 +8,12 @@ const MyTable = () => (
     columns={demoColumns}
     striped
     showColumnFilter
-    tableWrapperClass="max-h-[calc(100vh-350px)] overflow-y-auto"
+    tableWrapperClass="max-h-[calc(100svh-330px)] overflow-auto"
   >
-    <Table.Header className="flex flex-col gap-2 font-semibold p-2">
-      <div className="flex items-center justify-between">
+    <Table.Header className="min-w-0 border-b border-border p-2 font-semibold">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
         <Table.Dates />
-        <div className="flex items-center gap-1">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
           <Table.Search />
           <Table.ColumnFilter />
           <Table.FullScreen />

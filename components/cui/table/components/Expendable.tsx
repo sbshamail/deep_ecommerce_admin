@@ -98,6 +98,8 @@ export const isExpandable = (
   multiExpandable?: boolean,
   expandingContent?: unknown,
 ) => {
+  if (!expandingContent) return false;
+
   return multiExpandable
     ? Array.isArray(openExpandableRow) && openExpandableRow.includes(index)
     : openExpandableRow === index;

@@ -195,12 +195,17 @@ const TableMainBody = ({
     </tbody>
   );
   return (
-    <div className={wrapperClass}>
-      <main className={`theme-table-scroll relative ${tableWrapperClass} `}>
-        <div ref={divRef} className="select-none">
+    <div className={twMerge("min-w-0", wrapperClass)}>
+      <main
+        className={twMerge(
+          "theme-table-scroll relative min-w-0 overflow-auto",
+          tableWrapperClass,
+        )}
+      >
+        <div ref={divRef} className="min-w-max select-none">
           <table
             className={twMerge(
-              `m-0 p-0 table-auto border-spacing-0 select-text border-separate  min-w-full `,
+              `m-0 w-max min-w-full table-auto border-separate border-spacing-0 p-0 select-text`,
               ` ${tableClass} `,
             )}
           >

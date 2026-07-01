@@ -2,7 +2,7 @@ import TabTable from "@/common/table/TabTable";
 import { tabs } from "@/components/cui/table/demo/demo";
 const page = () => {
   return (
-    <div>
+    <div className="min-w-0">
       {/* <MyTable /> */}
       <TabTable tabs={tabs} />
     </div>

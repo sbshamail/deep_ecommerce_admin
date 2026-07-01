@@ -51,13 +51,15 @@ const Pagination = ({
     }
     return pages;
   };
+  if (pageCount <= 0) return null;
+
   return (
-    <div className="w-full sticky bg-background right-0 bottom-0 z-10 flex justify-end items-center  ">
-      <div className="flex space-x-2 items-center">
-        <span className="font-bold select-none">Total: {total}</span>
+    <div className="sticky right-0 bottom-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 border-t border-border bg-background p-2">
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="select-none text-sm font-bold">Total: {total}</span>
         <DropdownList
           Trigger={() => (
-            <div className="select-none border border-border rounded-lg hover:bg-accent Transition px-2">
+            <div className="select-none rounded-md border border-border px-2 py-1 text-sm transition hover:bg-accent">
               Limit {dataLimit}
             </div>
           )}
@@ -70,9 +72,10 @@ const Pagination = ({
           contentsWrapClass="w-32"
         />
       </div>
-      <div className="flex items-center space-x-2 select-none">
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-1 select-none">
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => handlePageChange(1)}
           disabled={currentPage === 1}
         >
@@ -80,6 +83,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="  "
@@ -90,6 +94,7 @@ const Pagination = ({
           <Button
             key={number}
             variant={number === currentPage ? "default" : "secondary"}
+            size="sm"
             onClick={() => handlePageChange(number)}
             className={number === currentPage ? "font-bold pointer-events-none" : ""}
           >
@@ -100,6 +105,7 @@ const Pagination = ({
 
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === pageCount}
         >
@@ -107,6 +113,7 @@ const Pagination = ({
         </Button>
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => handlePageChange(pageCount)}
           disabled={currentPage === pageCount}
         >

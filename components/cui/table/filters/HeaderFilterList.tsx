@@ -54,13 +54,14 @@ const HeaderFilterList: FC<HeaderFilterListType> = ({
     };
   });
   return (
-    <div className="flex flex-wrap space-x-2">
+    <div className="flex min-w-0 flex-wrap gap-2">
       {showFilterColumns?.map((column, index) => (
-        <ButtonGroup key={index}>
+        <ButtonGroup key={index} className="w-full min-w-0 sm:w-56">
           <Button variant="outline" aria-label="Search">
             <SearchIcon />
           </Button>
           <Input
+            className="min-w-0"
             placeholder={column.title}
             onChange={handleColumnFilter}
             value={column.value}
