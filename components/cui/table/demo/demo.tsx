@@ -271,7 +271,7 @@ const ExpandingTable = ({ row }: { row: unknown }) => {
 };
 export const tabs: TableTabsType[] = [
   {
-    titleTable: "Demo Table",
+    titleTable: <div className="">Demo</div>,
     columns: demoColumns,
     data: demoData,
     total: demoData.length,
