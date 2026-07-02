@@ -1,0 +1,43 @@
+import { cookies } from "next/headers";
+import { cache } from "react";
+
+import { authorizedFetch } from "@/lib/api/server";
+import { AuthUser } from "@/types/auth_types";
+
+import { ACCESS_TOKEN_COOKIE } from "./config";
+
+// Server-only. Do not import from a "use client" file —
+// next/headers throws at build time if you try.
+
+export async function getAccessToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+}
+
+/**
+ * Resolves the signed-in user (with roles) for the current request, or null.
+ * Wrapped in React's cache() so multiple layouts/pages calling this in the
+ * same request share one /user/me round trip instead of duplicating it.
+ */
+export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
+  const token = await getAccessToken();
+  if (!token) return null;
+
+  try {
+    return await authorizedFetch<AuthUser>("/user/me", token, { cache: "no-store" });
+  } catch {
+    return null;
+  }
+});
+
+/** Decodes a JWT's `exp` claim without verifying its signature — used only
+ *  to size the cookie's max-age, never to trust the token's contents. */
+export function decodeJwtExpiry(token: string): number | null {
+  try {
+    const payload = token.split(".")[1];
+    const json = JSON.parse(Buffer.from(payload, "base64").toString("utf8"));
+    return typeof json.exp === "number" ? json.exp : null;
+  } catch {
+    return null;
+  }
+}
