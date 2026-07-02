@@ -35,9 +35,10 @@ const TableTabs = ({
                   <div
                     key={index}
                     className={`relative cursor-pointer text-center w-full font-semibold select-none transition-colors
-                      ${isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      ${
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       }`}
                     onClick={() => setActiveTab(index)}
                   >

@@ -96,12 +96,16 @@ const Pagination = ({
             variant={number === currentPage ? "default" : "secondary"}
             size="sm"
             onClick={() => handlePageChange(number)}
-            className={number === currentPage ? "font-bold pointer-events-none" : ""}
+            className={
+              number === currentPage ? "font-bold pointer-events-none" : ""
+            }
           >
             {number}
           </Button>
         ))}
-        {currentPage < pageCount - 2 && <span className="mx-1 text-muted-foreground">…</span>}
+        {currentPage < pageCount - 2 && (
+          <span className="mx-1 text-muted-foreground">…</span>
+        )}
 
         <Button
           variant="secondary"
