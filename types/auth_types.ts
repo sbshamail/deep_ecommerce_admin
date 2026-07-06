@@ -17,8 +17,15 @@ export interface AuthShop {
 // Shape returned by GET /user/me (backend returns this raw, unwrapped)
 export interface AuthUser {
   id: number;
+  full_name: string;
   email: string;
   phone: string | null;
+  image: string | null;
+  contactinfo: object | null;
+  country: string;
+  country_code: string;
+  currency_code: string;
+  currency_symbol: string;
   verified: boolean;
   is_root: boolean;
   default_shop_id: number | null;

@@ -20,14 +20,10 @@ const useClickOutside = (toggle: () => void) => {
       handleClickOutside(event);
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('mousedown', handleClick);
-    }
+    window.addEventListener('mousedown', handleClick);
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('mousedown', handleClick);
-      }
+      window.removeEventListener('mousedown', handleClick);
     };
   }, [handleClickOutside]);
 

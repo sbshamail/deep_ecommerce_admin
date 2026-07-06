@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { authorizedFetch } from "@/lib/api/server";
@@ -24,11 +25,26 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   if (!token) return null;
 
   try {
-    return await authorizedFetch<AuthUser>("/user/me", token, { cache: "no-store" });
+    return await authorizedFetch<AuthUser>("/user/read", token, {
+      cache: "no-store",
+    });
   } catch {
     return null;
   }
 });
+
+/**
+ * Resolves the signed-in user for a page/layout that requires auth, or
+ * redirects to /signin. Use this instead of a bare `getCurrentUser()` + `if`
+ * in any route that must always be protected; for a route that should be
+ * reachable by both guests and signed-in users, call `getCurrentUser()`
+ * directly and branch on the result instead.
+ */
+export async function requireUser(): Promise<AuthUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/signin");
+  return user;
+}
 
 /** Decodes a JWT's `exp` claim without verifying its signature — used only
  *  to size the cookie's max-age, never to trust the token's contents. */

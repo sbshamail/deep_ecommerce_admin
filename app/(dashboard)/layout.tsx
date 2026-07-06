@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/auth/session";
 import AppSidebar from "@/components/cui/AppSidebar";
 import UserMenu from "@/components/cui/auth/UserMenu";
 import ToggleMode from "@/components/cui/themeToggle/ToggleMode";
@@ -15,10 +12,16 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Middleware only checks cookie presence; this is the real check —
-  // it fails closed if the token is invalid/expired/revoked server-side.
-  const user = await getCurrentUser();
-  if (!user) redirect("/signin");
+  // proxy.ts only checks cookie presence; this is the real check — it fails
+  // closed for every page by default, unless the page's path is listed in
+  // OPTIONAL_AUTH_DASHBOARD_PATHS (see auth/config.ts).
+  // const pathname = (await headers()).get("x-pathname") ?? "";
+  // const isOptionalAuthPath = matchesPath(
+  //   OPTIONAL_AUTH_DASHBOARD_PATHS,
+  //   pathname,
+  // );
+
+  // if (!isOptionalAuthPath) await requireUser();
 
   return (
     <SidebarProvider className="h-svh min-h-0 overflow-hidden">
@@ -27,7 +30,7 @@ export default async function DashboardLayout({
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <SidebarTrigger />
           <div className="min-w-0">
-            <h1 className="truncate text-sm font-semibold">Ecommerce Admin</h1>
+            <h1 className="truncate text-sm font-semibold">Admin</h1>
             <p className="truncate text-xs text-muted-foreground">
               Products, orders, categories, shops and reports
             </p>

@@ -1,7 +1,7 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import AuthProvider from "@/auth/authContext";
 import { getCurrentUser } from "@/auth/session";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { parseThemeCookie, THEME_COOKIE } from "@/theme/config";
 import ThemeProvider from "@/theme/themeContext";
 import type { Metadata } from "next";
@@ -12,14 +12,16 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Deep Ecommerce Admin",
-  description: "Ecommerce admin dashboard",
+  // title: "Deep Ecommerce Admin",
+  // description: "Ecommerce admin dashboard",
 };
 
 export default async function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   const store = await cookies();
   const theme = parseThemeCookie(store.get(THEME_COOKIE)?.value);
@@ -42,7 +44,10 @@ export default async function RootLayout({
       <body className="h-full overflow-hidden">
         <ThemeProvider initial={theme}>
           <AuthProvider initialUser={user}>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              {children}
+              {modal}
+            </TooltipProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

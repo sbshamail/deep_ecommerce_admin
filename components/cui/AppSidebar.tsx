@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   BadgePercent,
   Boxes,
@@ -15,6 +13,8 @@ import {
   Store,
   Users,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -138,7 +138,7 @@ const AppSidebar = () => {
                   <ShoppingBag className="size-4" />
                 </span>
                 <span className="grid flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold">Deep Ecommerce</span>
+                  <span className="truncate font-semibold">Admin</span>
                   <span className="truncate text-xs text-sidebar-foreground/70">
                     Admin
                   </span>

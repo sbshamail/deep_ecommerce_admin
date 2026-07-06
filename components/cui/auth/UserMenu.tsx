@@ -12,9 +12,14 @@ const UserMenu = () => {
   return (
     <div className="flex items-center gap-2">
       <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-        {user.email}
+        {user.full_name ?? user.email ?? user.phone}
       </span>
-      <Button variant="ghost" size="icon" onClick={() => void logout()} aria-label="Log out">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => void logout()}
+        aria-label="Log out"
+      >
         <LogOut size={16} />
       </Button>
     </div>

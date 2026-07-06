@@ -15,7 +15,10 @@ interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   can: (...permissions: string[]) => boolean;
-  canInShop: (shopId: number | null | undefined, ...permissions: string[]) => boolean;
+  canInShop: (
+    shopId: number | null | undefined,
+    ...permissions: string[]
+  ) => boolean;
   isShopAdmin: (shopId?: number | null) => boolean;
   permissions: Set<string>;
   /** Re-fetches the current user from the server (e.g. after a role change). */
@@ -39,6 +42,7 @@ interface Props {
 
 const AuthProvider = ({ children, initialUser }: Props) => {
   const [user, setUser] = useState<AuthUser | null>(initialUser);
+
   const router = useRouter();
 
   const refresh = useCallback(async () => {
@@ -57,7 +61,8 @@ const AuthProvider = ({ children, initialUser }: Props) => {
     user,
     isAuthenticated: user !== null,
     can: (...permissions) => hasPermission(user, ...permissions),
-    canInShop: (shopId, ...permissions) => hasShopPermission(user, shopId, ...permissions),
+    canInShop: (shopId, ...permissions) =>
+      hasShopPermission(user, shopId, ...permissions),
     isShopAdmin: (shopId) => isShopAdmin(user, shopId),
     permissions: getPermissions(user),
     refresh,

@@ -98,7 +98,7 @@ const TableRoot = ({
   const [columnFilter, setColumnFilter] = useState<ColumnFilterType[]>([]);
   const [columnFilterField, setColumnFilterFields] = useState<ColumnType[]>([]);
   const [fromDate, setFromDate] = useState<Date | undefined>();
-  const [toDate, setToDate] = useState<Date | undefined>(new Date());
+  const [toDate, setToDate] = useState<Date | undefined>();
 
   // Resolve active tab values
   const activeTabData = tabs?.[activeTabState];
