@@ -123,9 +123,9 @@ const TableHeaderAction = ({
     },
   ];
 
-  const renderComponent = (state: ActionStateTypes) =>
+  const renderComponent = (state: ActionStateTypes, close: () => void) =>
     typeof state.Component === "function"
-      ? state.Component({ removeSelection, selectedRows, setSelectedRows })
+      ? state.Component({ removeSelection, selectedRows, setSelectedRows, close })
       : state.Component;
 
   return (
@@ -156,7 +156,7 @@ const TableHeaderAction = ({
           <SheetHeader>
             <SheetTitle>{sheetContent.title}</SheetTitle>
           </SheetHeader>
-          <SheetBody>{renderComponent(sheetContent)}</SheetBody>
+          <SheetBody>{renderComponent(sheetContent, () => toggleSheet(false))}</SheetBody>
         </SheetContent>
       </Sheet>
 
@@ -166,7 +166,7 @@ const TableHeaderAction = ({
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
           </DialogHeader>
-          <div className="py-2">{renderComponent(dialogContent)}</div>
+          <div className="py-2">{renderComponent(dialogContent, () => toggleDialog(false))}</div>
         </DialogContent>
       </Dialog>
     </>

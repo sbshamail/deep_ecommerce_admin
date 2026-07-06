@@ -9,6 +9,8 @@ export interface ActionType {
   selectedRows: Record<string, unknown>[];
   setSelectedRows: (rows: Record<string, unknown>[]) => void;
   removeSelection: () => void;
+  /** Closes the Sheet/Dialog this Component is rendering inside of. */
+  close?: () => void;
 }
 
 export interface ActionMenuList {

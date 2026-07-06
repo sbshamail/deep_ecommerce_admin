@@ -49,3 +49,29 @@ export async function authorizedFetch<T>(
     },
   });
 }
+
+/**
+ * Like authorizedFetch, but for listRecords()-style endpoints whose envelope
+ * is { success, detail, data, total } — backendFetch's unwrap keeps only
+ * `data` and drops `total`, which paginated tables need too.
+ */
+export async function authorizedFetchList<T>(
+  path: string,
+  token: string,
+  init: RequestInit = {},
+): Promise<{ data: T[]; total: number }> {
+  const res = await fetch(`${BACKEND_API_URL}${path}`, {
+    ...init,
+    headers: {
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const payload = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, payload?.detail ?? payload?.message ?? "Request failed");
+  }
+
+  return { data: payload?.data ?? [], total: payload?.total ?? 0 };
+}
