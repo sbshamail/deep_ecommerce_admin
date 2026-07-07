@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 
-import { actionMenuContents, filterActionMenuCondition } from "./function";
+import { actionMenuContents, filterActionMenuCondition, openComponentAction } from "./function";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -63,11 +64,13 @@ const TableHeaderAction = ({
 }: TableHeaderActionType) => {
   // Sheet (side drawer) state
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [sheetContent, setSheetContent] = useState<ActionStateTypes>(emptyContent);
+  const [sheetContent, setSheetContent] =
+    useState<ActionStateTypes>(emptyContent);
 
   // Dialog (centered modal) state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogContent, setDialogContent] = useState<ActionStateTypes>(emptyContent);
+  const [dialogContent, setDialogContent] =
+    useState<ActionStateTypes>(emptyContent);
 
   const toggleSheet = (open?: boolean) =>
     setSheetOpen((prev) => (open !== undefined ? open : !prev));
@@ -75,7 +78,9 @@ const TableHeaderAction = ({
   const toggleDialog = (open?: boolean) =>
     setDialogOpen((prev) => (open !== undefined ? open : !prev));
 
-  const handleActionMenuContents = (listCondition: ActionMenuList[] | undefined) =>
+  const handleActionMenuContents = (
+    listCondition: ActionMenuList[] | undefined,
+  ) =>
     actionMenuContents(
       listCondition,
       selectedRows,
@@ -89,7 +94,10 @@ const TableHeaderAction = ({
 
   const renderDropdowns = (actionMenu: NewDropDownMenu[]): React.ReactNode[] =>
     actionMenu.map((menu, index) => {
-      const listCondition = filterActionMenuCondition(menu.contents(), selectedRows);
+      const listCondition = filterActionMenuCondition(
+        menu.contents(),
+        selectedRows,
+      );
       if (!listCondition || listCondition.length === 0) return null;
       return (
         <DropdownList
@@ -101,7 +109,10 @@ const TableHeaderAction = ({
     });
 
   const mainActionMenu = actionMenuList ? actionMenuList() : undefined;
-  const menuListCondition = filterActionMenuCondition(mainActionMenu, selectedRows);
+  const menuListCondition = filterActionMenuCondition(
+    mainActionMenu,
+    selectedRows,
+  );
 
   const ExportHandle: NewDropDownMenu[] = [
     {
@@ -125,8 +136,39 @@ const TableHeaderAction = ({
 
   const renderComponent = (state: ActionStateTypes, close: () => void) =>
     typeof state.Component === "function"
-      ? state.Component({ removeSelection, selectedRows, setSelectedRows, close })
+      ? state.Component({
+          removeSelection,
+          selectedRows,
+          setSelectedRows,
+          close,
+        })
       : state.Component;
+
+  // A NewActionMenu.click item describes itself as an ActionMenuList entry
+  // (title/Icon/Component/modal) instead of building its own trigger + Sheet
+  // or Dialog — this renders that trigger and opens it into the shared ones.
+  const renderClickTrigger = (getItem: () => ActionMenuList, index: number) => {
+    const item = getItem();
+    return (
+      <Button
+        key={index}
+        size="sm"
+        className="h-7 gap-1 text-xs"
+        onClick={() =>
+          openComponentAction(
+            item,
+            () => toggleSheet(),
+            setSheetContent,
+            () => toggleDialog(),
+            setDialogContent,
+          )
+        }
+      >
+        {item.Icon && <item.Icon size={12} />}
+        {item.title}
+      </Button>
+    );
+  };
 
   return (
     <>
@@ -142,6 +184,7 @@ const TableHeaderAction = ({
           newActionMenu().map((item, index) => (
             <React.Fragment key={index}>
               {item.dropdownMenu && renderDropdowns(item.dropdownMenu)}
+              {item.click && renderClickTrigger(item.click, index)}
               {item.render && item.render()}
             </React.Fragment>
           ))}
@@ -156,7 +199,9 @@ const TableHeaderAction = ({
           <SheetHeader>
             <SheetTitle>{sheetContent.title}</SheetTitle>
           </SheetHeader>
-          <SheetBody>{renderComponent(sheetContent, () => toggleSheet(false))}</SheetBody>
+          <SheetBody>
+            {renderComponent(sheetContent, () => toggleSheet(false))}
+          </SheetBody>
         </SheetContent>
       </Sheet>
 
@@ -166,7 +211,9 @@ const TableHeaderAction = ({
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
           </DialogHeader>
-          <div className="py-2">{renderComponent(dialogContent, () => toggleDialog(false))}</div>
+          <div className="py-2">
+            {renderComponent(dialogContent, () => toggleDialog(false))}
+          </div>
         </DialogContent>
       </Dialog>
     </>

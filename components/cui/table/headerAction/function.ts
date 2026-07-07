@@ -26,6 +26,39 @@ export const handleActionMenu = (
   setContent((prev) => ({ ...prev, Component, title, multiSelected }));
 };
 
+/**
+ * Opens an ActionMenuList item's Component in the shared Sheet, or the
+ * shared Dialog when item.modal is set — the same open/close plumbing
+ * actionMenuContents uses below, reusable for any button (e.g. a
+ * NewActionMenu.click trigger) that wants to open into one without
+ * redefining its own Sheet/Dialog.
+ */
+export const openComponentAction = (
+  item: ActionMenuList,
+  toggleDrawer: () => void,
+  setDrawerContent: Dispatch<SetStateAction<ActionStateTypes>>,
+  toggleModal?: () => void,
+  setModalContent?: Dispatch<SetStateAction<ActionStateTypes>>,
+) => {
+  if (item.modal && toggleModal && setModalContent) {
+    handleActionMenu(
+      toggleModal,
+      setModalContent,
+      item.Component as JSX.Element,
+      item.title,
+      item.multiSelected,
+    );
+  } else {
+    handleActionMenu(
+      toggleDrawer,
+      setDrawerContent,
+      item.Component as JSX.Element,
+      item.title,
+      item.multiSelected,
+    );
+  }
+};
+
 export const actionMenuContents = (
   listCondition: ActionMenuList[] | undefined,
   selectedRows: Record<string, unknown>[],
@@ -45,24 +78,13 @@ export const actionMenuContents = (
       : item.deleted
         ? () => item.deleted!({ setSelectedRows, selectedRows, removeSelection })
         : item.Component
-          ? () => {
-              if (item.modal && toggleModal && setModalContent) {
-                handleActionMenu(
-                  toggleModal,
-                  setModalContent,
-                  item.Component as JSX.Element,
-                  item.title,
-                  item.multiSelected,
-                );
-              } else {
-                handleActionMenu(
-                  toggleDrawer,
-                  setDrawerContent,
-                  item.Component as JSX.Element,
-                  item.title,
-                  item.multiSelected,
-                );
-              }
-            }
+          ? () =>
+              openComponentAction(
+                item,
+                toggleDrawer,
+                setDrawerContent,
+                toggleModal,
+                setModalContent,
+              )
           : () => {},
   }));

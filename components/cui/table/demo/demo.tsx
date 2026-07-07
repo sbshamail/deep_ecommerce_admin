@@ -18,7 +18,30 @@ import {
 import { Import, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-// ─── Create modal triggered by the "Create" button ───────────────────────────
+// ─── Action menus ─────────────────────────────────────────────────────────────
+
+export const demoActionMenuList = (): ActionMenuList[] => [
+  {
+    title: "Edit",
+    Icon: Pencil,
+    Component: () => <p className="text-center">This is Edit Content</p>,
+    visible: "selected",
+  },
+  {
+    title: "Create",
+    Icon: Plus,
+    Component: <p className="text-center">This is Create Content</p>,
+    visible: "unselected",
+    // modal: true,
+  },
+  {
+    title: "Delete",
+    Icon: Trash2,
+    deleted: () => {},
+    visible: "selected",
+    multiSelected: true,
+  },
+];
 
 const CreateModal = () => {
   const [open, setOpen] = useState(false);
@@ -59,31 +82,6 @@ const CreateModal = () => {
   );
 };
 
-// ─── Action menus ─────────────────────────────────────────────────────────────
-
-export const demoActionMenuList = (): ActionMenuList[] => [
-  {
-    title: "Edit",
-    Icon: Pencil,
-    Component: () => <p className="text-center">This is Edit Content</p>,
-    visible: "selected",
-  },
-  {
-    title: "Create",
-    Icon: Plus,
-    Component: <p className="text-center">This is Create Content</p>,
-    visible: "unselected",
-    // modal: true,
-  },
-  {
-    title: "Delete",
-    Icon: Trash2,
-    deleted: () => {},
-    visible: "selected",
-    multiSelected: true,
-  },
-];
-
 export const demoNewActionMenu = (): NewActionMenu[] => [
   {
     dropdownMenu: [
@@ -100,6 +98,20 @@ export const demoNewActionMenu = (): NewActionMenu[] => [
         ],
       },
     ],
+    // Describes itself as an ActionMenuList entry instead of building its
+    // own trigger + Sheet/Dialog — opens straight into the shared Dialog
+    // (modal: true) the table already renders. Omit `modal` to open into
+    // the shared Sheet instead, same as the "Edit" row action above.
+    click: () => ({
+      title: "Create New Entry",
+      Icon: Plus,
+      modal: true,
+      Component: (
+        <p className="py-2 text-sm text-muted-foreground">
+          Form fields go here — connect your inputs.
+        </p>
+      ),
+    }),
     render: () => <CreateModal />,
   },
 ];

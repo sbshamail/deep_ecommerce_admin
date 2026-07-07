@@ -52,6 +52,7 @@ export interface NewDropDownMenu {
 }
 export interface NewActionMenu {
   dropdownMenu?: NewDropDownMenu[];
+  click?: () => ActionMenuList;
   render?: () => React.ReactNode;
 }
 export interface ActionStateTypes {
