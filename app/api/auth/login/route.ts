@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { ACCESS_TOKEN_COOKIE, DEFAULT_TOKEN_MAX_AGE, REFRESH_TOKEN_COOKIE } from "@/auth/config";
+import {
+  ACCESS_TOKEN_COOKIE,
+  DEFAULT_TOKEN_MAX_AGE,
+  REFRESH_TOKEN_COOKIE,
+} from "@/auth/config";
 import { decodeJwtExpiry } from "@/auth/session";
 import { ApiError, backendFetch } from "@/lib/api/server";
 import { LoginResponseData, SigninPayload } from "@/types/auth_types";
@@ -9,7 +13,10 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as SigninPayload | null;
 
   if (!body?.identifier || !body?.password) {
-    return NextResponse.json({ detail: "Identifier and password are required" }, { status: 400 });
+    return NextResponse.json(
+      { detail: "Identifier and password are required" },
+      { status: 400 },
+    );
   }
 
   let data: LoginResponseData;
@@ -39,7 +46,11 @@ export async function POST(request: Request) {
     ? Math.max(accessExp - Math.floor(Date.now() / 1000), 60)
     : DEFAULT_TOKEN_MAX_AGE;
 
-  res.cookies.set(ACCESS_TOKEN_COOKIE, data.access_token, { ...cookieOpts, maxAge: accessMaxAge });
+  res.cookies.set(ACCESS_TOKEN_COOKIE, data.access_token, {
+    ...cookieOpts,
+    maxAge: accessMaxAge,
+  });
+
   if (data.refresh_token) {
     res.cookies.set(REFRESH_TOKEN_COOKIE, data.refresh_token, {
       ...cookieOpts,

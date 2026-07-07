@@ -1,5 +1,3 @@
-import { NextRequest, NextResponse } from "next/server";
-
 import {
   ACCESS_TOKEN_COOKIE,
   DEFAULT_AUTHENTICATED_PATH,
@@ -7,17 +5,37 @@ import {
   matchesPath,
   PUBLIC_PATHS,
 } from "@/auth/config";
+import { jwtDecode } from "jwt-decode";
+import { NextRequest, NextResponse } from "next/server";
 
 // Coarse gating only: this checks the access-token cookie's *presence*, not
 // its validity — the JWT is verified for real by the backend on every request.
 // This just avoids flashing protected pages before that check happens.
+
+type JwtPayload = {
+  exp?: number;
+};
+
+function isTokenExpired(token: string) {
+  try {
+    const values = jwtDecode<JwtPayload>(token);
+    if (!values.exp) return true;
+    // exp is in seconds
+    return Date.now() >= values.exp * 1000;
+  } catch {
+    return true; // Invalid token
+  }
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasToken = Boolean(request.cookies.get(ACCESS_TOKEN_COOKIE)?.value);
+  const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const hasToken = Boolean(token);
+  const isExpired = token ? isTokenExpired(token) : true;
   const isPublicPath = matchesPath(PUBLIC_PATHS, pathname);
   const isGuestOnlyPath = matchesPath(GUEST_ONLY_PATHS, pathname);
 
-  if (!hasToken && !isPublicPath) {
+  if ((!hasToken || isExpired) && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
     url.search = "";
@@ -25,7 +43,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasToken && isGuestOnlyPath) {
+  if (hasToken && !isExpired && isGuestOnlyPath) {
     const url = request.nextUrl.clone();
     url.pathname = DEFAULT_AUTHENTICATED_PATH;
     url.search = "";
