@@ -308,7 +308,7 @@ export const demoColumns2: ColumnType[] = [
   { title: "Email", accessor: "email", filterId: "email" },
 ];
 
-const ExpandingTable = ({ row }: { row: unknown }) => (
+const ExpandingTable = (row: unknown) => (
   <div>{JSON.stringify(row)}</div>
 );
 

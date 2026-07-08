@@ -85,7 +85,7 @@ export const ExtentableContent = ({
           }}
         >
           {/* <div>adasdasd</div> */}
-          {ExpandingContent && ExpandingContent({ row: item, index, data })}
+          {ExpandingContent && ExpandingContent(item, index, data)}
         </div>
       </td>
     </tr>

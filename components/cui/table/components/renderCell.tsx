@@ -3,14 +3,14 @@ import { utility } from "@/utility/helpers";
 import React from "react";
 
 export const renderCell = (
-  item: number | string | Record<string, unknown> | null,
+  item: Record<string, unknown> | null,
   column: ColumnType,
   index: number,
   data: Record<string, unknown>[],
 ) => {
   // Access nested properties using a function
   const accessors = column?.accessor?.split(".");
-  let value = item;
+  let value: string | number | Record<string, unknown> | null = item;
 
   accessors?.forEach((accessor: string) => {
     if (
@@ -75,7 +75,7 @@ export const renderCell = (
       return utility.formatDate(value as string | Date);
     case "currency":
       return utility.currencyFormatter(
-        value as number,
+        value as unknown as number,
         column.currency,
         column.format,
       );

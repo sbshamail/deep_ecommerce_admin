@@ -1,10 +1,9 @@
 "use client";
 import clsx from "clsx";
-import React, { useMemo, useState } from "react";
+import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import FullScreenDom from "@/hooks/FullScreenDom";
-import { AlignJustify, Check } from "lucide-react";
 import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuListType,
@@ -15,10 +14,15 @@ import {
   TableMainClassesType,
   TableTabsType,
 } from "@/types/table_types";
+import { AlignJustify, Check } from "lucide-react";
 
 import DropdownList from "../DropdownList";
 import FullScreenTable from "./components/FullScreenTable";
-import TableContext, { TableDensity, useTableContext } from "./context";
+import TableContext, {
+  TableContextValue,
+  TableDensity,
+  useTableContext,
+} from "./context";
 import ColumnHideShow from "./filters/ColumnHideShow";
 import ColumnManager from "./filters/ColumnManager";
 import FromToDateFilter from "./filters/FromToDateFilter";
@@ -31,21 +35,22 @@ import TableMainBody from "./main/TableMainBody";
 
 // ─── Root props ───────────────────────────────────────────────────────────────
 
-interface TableRootProps extends TableMainClassesType {
+interface TableRootProps<T = Record<string, unknown>>
+  extends TableMainClassesType {
   children: React.ReactNode;
   className?: ClassNameType;
 
   // Direct data mode
-  data?: Record<string, unknown>[];
-  columns?: ColumnType[];
+  data?: T[];
+  columns?: ColumnType<T>[];
   total?: number;
 
   // Tab mode — supply tabs instead of data/columns
-  tabs?: TableTabsType[];
+  tabs?: TableTabsType<T>[];
 
   // Action menus for direct-data mode (tab mode reads them from the active tab)
-  actionMenuList?: ActionMenuListType;
-  newActionMenu?: NewActionMenuType;
+  actionMenuList?: ActionMenuListType<T>;
+  newActionMenu?: NewActionMenuType<T>;
 
   // Feature flags
   showColumnFilter?: boolean;
@@ -54,13 +59,16 @@ interface TableRootProps extends TableMainClassesType {
   stripedClass?: string;
   expandable?: boolean;
   multiExpandable?: boolean;
-  ExpandingContent?: ExpandingTableType;
+  ExpandingContent?: ExpandingTableType<T>;
   tableWrapperClass?: ClassNameType;
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
+// T is erased to Record<string, unknown> once it reaches TableContext — the
+// row type only matters for the public props (columns/actionMenuList/etc),
+// which is why callers never need to cast when using <Table<Row> ...>.
 
-const TableRoot = ({
+const TableRoot = <T = Record<string, unknown>,>({
   children,
   className,
   data: dataProp = [],
@@ -85,18 +93,18 @@ const TableRoot = ({
   tBodyClass,
   trBodyClass,
   tdBodyClass,
-}: TableRootProps) => {
+}: TableRootProps<T>) => {
   const [activeTabState, setActiveTabState] = useState(0);
-  const [selectedRows, setSelectedRows] = useState<Record<string, unknown>[]>(
-    [],
-  );
+  const [selectedRows, setSelectedRows] = useState<T[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [dataLimit, setDataLimit] = useState(20);
   const [fullScreen, setFullScreen] = useState(false);
   const [density, setDensity] = useState<TableDensity>("default");
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilter, setColumnFilter] = useState<ColumnFilterType[]>([]);
-  const [columnFilterField, setColumnFilterFields] = useState<ColumnType[]>([]);
+  const [columnFilterField, setColumnFilterFields] = useState<ColumnType<T>[]>(
+    [],
+  );
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
 
@@ -113,7 +121,7 @@ const TableRoot = ({
   const curRowId = activeTabData?.rowId ?? rowId;
 
   const [showOnlyColumns, setShowOnlyColumns] =
-    useState<ColumnType[]>(allColumns);
+    useState<ColumnType<T>[]>(allColumns);
 
   const setActiveTab = (n: number) => {
     setActiveTabState(n);
@@ -128,20 +136,26 @@ const TableRoot = ({
     return rawData.slice(skip, skip + dataLimit);
   }, [rawData, currentPage, dataLimit]);
 
-  const ctx = {
-    data: paginatedData,
-    rawData,
-    allColumns,
-    showOnlyColumns,
-    setShowOnlyColumns,
+  // Erase T to the context's plain Record<string, unknown> shape — safe
+  // because every row T is used here structurally is-a Record at runtime.
+  const ctx: TableContextValue = {
+    data: paginatedData as unknown as Record<string, unknown>[],
+    rawData: rawData as unknown as Record<string, unknown>[],
+    allColumns: allColumns as unknown as ColumnType[],
+    showOnlyColumns: showOnlyColumns as unknown as ColumnType[],
+    setShowOnlyColumns: setShowOnlyColumns as unknown as Dispatch<
+      SetStateAction<ColumnType[]>
+    >,
     total,
-    tabs,
+    tabs: tabs as unknown as TableTabsType[] | undefined,
     activeTab: activeTabState,
     setActiveTab,
-    actionMenuList,
-    newActionMenu,
-    selectedRows,
-    setSelectedRows,
+    actionMenuList: actionMenuList as unknown as ActionMenuListType | undefined,
+    newActionMenu: newActionMenu as unknown as NewActionMenuType | undefined,
+    selectedRows: selectedRows as unknown as Record<string, unknown>[],
+    setSelectedRows: setSelectedRows as unknown as (
+      rows: Record<string, unknown>[],
+    ) => void,
     removeSelection: () => setSelectedRows([]),
     currentPage,
     setCurrentPage,
@@ -151,8 +165,10 @@ const TableRoot = ({
     setGlobalFilter,
     columnFilter,
     setColumnFilter,
-    columnFilterField,
-    setColumnFilterFields,
+    columnFilterField: columnFilterField as unknown as ColumnType[],
+    setColumnFilterFields: setColumnFilterFields as unknown as Dispatch<
+      SetStateAction<ColumnType[]>
+    >,
     fromDate,
     setFromDate,
     toDate,
@@ -167,7 +183,7 @@ const TableRoot = ({
     stripedClass,
     expandable: curExpandable,
     multiExpandable: curMultiExp,
-    ExpandingContent: curExpContent,
+    ExpandingContent: curExpContent as unknown as ExpandingTableType | undefined,
     tableWrapperClass,
     tableClass,
     trHeadClass,
@@ -520,6 +536,28 @@ const TablePaginationSlot = ({
 
 // ─── Compound component export ────────────────────────────────────────────────
 
+// Object.assign loses TableRoot's generic call signature, so it's restated
+// here explicitly — this is what makes `<Table<Row> data={rows} .../>` type
+// the columns/actionMenuList/newActionMenu props without callers casting.
+interface TableComponent {
+  <T = Record<string, unknown>>(
+    props: TableRootProps<T> & { ref?: React.Ref<HTMLDivElement> },
+  ): React.ReactElement;
+  Header: typeof TableHeaderSlot;
+  Dates: typeof TableDatesSlot;
+  Search: typeof TableSearchSlot;
+  ShowFilter: typeof TableShowFilterSlot;
+  HideColumns: typeof TableHideColumnsSlot;
+  ColumnFilter: typeof TableColumnFilterSlot;
+  FilterBadges: typeof TableFilterBadgesSlot;
+  FullScreen: typeof TableFullScreenSlot;
+  Density: typeof TableDensitySlot;
+  Action: typeof TableActionSlot;
+  Body: typeof TableBodySlot;
+  Tabs: typeof TableTabsSlot;
+  Pagination: typeof TablePaginationSlot;
+}
+
 const Table = Object.assign(TableRoot, {
   Header: TableHeaderSlot,
   Dates: TableDatesSlot,
@@ -538,7 +576,7 @@ const Table = Object.assign(TableRoot, {
   Body: TableBodySlot,
   Tabs: TableTabsSlot,
   Pagination: TablePaginationSlot,
-});
+}) as unknown as TableComponent;
 
 export { useTableContext };
 export default Table;

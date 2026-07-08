@@ -14,8 +14,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { ActionMenuList, ActionType, ColumnType } from "@/types/table_types";
 import { LeafCategoryOption, ProductRead } from "@/types/product_types";
+import { ActionMenuList, ActionType, ColumnType } from "@/types/table_types";
+import ProductVariantTable from "./ProductVariantTable";
 
 interface ProductTableProps {
   products: ProductRead[];
@@ -23,7 +24,7 @@ interface ProductTableProps {
   categories: LeafCategoryOption[];
 }
 
-const columns: ColumnType[] = [
+const columns: ColumnType<ProductRead>[] = [
   {
     title: "Thumbnail",
     accessor: "thumbnail.original",
@@ -41,6 +42,20 @@ const columns: ColumnType[] = [
   },
   { title: "Name", accessor: "name", filterId: "name" },
   { title: "Category", accessor: "category.name", filterId: "category.name" },
+  {
+    title: "Price Range Min-Max",
+    render: ({ row }) => (
+      <span>
+        {row?.min_price}-{row?.max_price}
+      </span>
+    ),
+    filterId: "min_price",
+  },
+  {
+    title: "Stock",
+    accessor: "total_stock",
+    filterId: "total_stock",
+  },
   {
     title: "Status",
     accessor: "is_active",
@@ -69,7 +84,11 @@ const CreateProductButton = ({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => setOpen(true)}>
+      <Button
+        size="sm"
+        className="h-7 gap-1 text-xs"
+        onClick={() => setOpen(true)}
+      >
         <Plus size={12} />
         Create
       </Button>
@@ -95,19 +114,23 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
   const { user, canInShop } = useAuth();
 
   const canCreate = canInShop(user?.default_shop_id, "product:create");
-  const canUpdate = canInShop(user?.default_shop_id, "product:create", "product:update");
+  const canUpdate = canInShop(
+    user?.default_shop_id,
+    "product:create",
+    "product:update",
+  );
 
   const refresh = () => router.refresh();
 
-  const actionMenuList = (): ActionMenuList[] => {
+  const actionMenuList = (): ActionMenuList<ProductRead>[] => {
     if (!canUpdate) return [];
     return [
       {
         title: "Edit",
         Icon: Pencil,
         visible: "selected",
-        Component: (ctx: ActionType) => {
-          const row = ctx.selectedRows[0] as unknown as ProductRead;
+        Component: (ctx: ActionType<ProductRead>) => {
+          const row = ctx.selectedRows[0];
           return (
             <ProductForm
               mode="update"
@@ -123,17 +146,30 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
   };
 
   return (
-    <Table
-      data={products as unknown as Record<string, unknown>[]}
+    <Table<ProductRead>
+      data={products}
       columns={columns}
       total={total}
       rowId="id"
       striped
       showColumnFilter
       actionMenuList={canUpdate ? actionMenuList : undefined}
+      expandable={true}
+      ExpandingContent={(row: ProductRead) => (
+        <ProductVariantTable data={row?.variants || []} />
+      )}
       newActionMenu={
         canCreate
-          ? () => [{ render: () => <CreateProductButton categories={categories} onSuccess={refresh} /> }]
+          ? () => [
+              {
+                render: () => (
+                  <CreateProductButton
+                    categories={categories}
+                    onSuccess={refresh}
+                  />
+                ),
+              },
+            ]
           : undefined
       }
       tableWrapperClass="max-h-[calc(100svh-330px)] overflow-auto"

@@ -1,13 +1,7 @@
 // Mirrors backend src/api/models/product_model/productModel.py and
 // ProductVariantModel.py response shapes (ProductRead / ProductSingleRead).
 
-export interface MediaRead {
-  id: number;
-  filename: string;
-  original: string;
-  thumbnail: string | null;
-  media_type: string;
-}
+import { MediaRead } from "./media_types";
 
 export interface ProductShopRead {
   id: number;
@@ -29,6 +23,13 @@ export interface ProductAttribute {
 // price/stock/sku are only present on the single-record read below.
 export interface ProductVariantBase {
   id: number;
+  price: number;
+  discount_price: number | null;
+  stock: number;
+  is_in_stock: boolean;
+  sku: string | null;
+  attributes: Record<string, string> | null;
+  image: MediaRead | null;
 }
 
 export interface ProductVariantRead {
@@ -59,6 +60,9 @@ export interface ProductRead {
   is_featured: boolean;
   shop: ProductShopRead;
   category: ProductCategoryRead;
+  total_stock: number;
+  min_price: number | null;
+  max_price: number | null;
   variants: ProductVariantBase[] | null;
   created_at: string;
   updated_at: string | null;

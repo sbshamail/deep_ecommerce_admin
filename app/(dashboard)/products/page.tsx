@@ -1,5 +1,5 @@
-import ProductTable from "@/common/table/ProductTable";
 import { getAccessToken } from "@/auth/session";
+import ProductTable from "@/common/table/ProductTable";
 import { ApiError, authorizedFetchList, backendFetch } from "@/lib/api/server";
 import { flattenLeafCategories } from "@/lib/product/categories";
 import { CategoryTreeNode, ProductRead } from "@/types/product_types";
@@ -7,7 +7,11 @@ import { CategoryTreeNode, ProductRead } from "@/types/product_types";
 const page = async () => {
   const token = await getAccessToken();
   if (!token) {
-    return <p className="text-sm text-muted-foreground">Sign in to manage products.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        Sign in to manage products.
+      </p>
+    );
   }
 
   let products: ProductRead[] = [];
@@ -23,7 +27,8 @@ const page = async () => {
     products = result.data;
     total = result.total;
   } catch (err) {
-    loadError = err instanceof ApiError ? err.message : "Failed to load products";
+    loadError =
+      err instanceof ApiError ? err.message : "Failed to load products";
   }
 
   if (loadError) {
@@ -32,7 +37,9 @@ const page = async () => {
 
   let categoryTree: CategoryTreeNode[] = [];
   try {
-    categoryTree = await backendFetch<CategoryTreeNode[]>("/category/list?limit=500");
+    categoryTree = await backendFetch<CategoryTreeNode[]>(
+      "/category/list?limit=500",
+    );
   } catch {
     // Non-fatal — the create/edit form just offers no category options.
   }

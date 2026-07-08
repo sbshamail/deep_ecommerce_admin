@@ -5,40 +5,40 @@ import { ClassNameType } from "./common_types";
 //   selectedRows: Record<string, any>[];
 // }
 
-export interface ActionType {
-  selectedRows: Record<string, unknown>[];
-  setSelectedRows: (rows: Record<string, unknown>[]) => void;
+export interface ActionType<T = Record<string, unknown>> {
+  selectedRows: T[];
+  setSelectedRows: (rows: T[]) => void;
   removeSelection: () => void;
   /** Closes the Sheet/Dialog this Component is rendering inside of. */
   close?: () => void;
 }
 
-export interface ActionMenuList {
+export interface ActionMenuList<T = Record<string, unknown>> {
   title: string;
   Icon?: React.ElementType;
   visible?: "selected" | "unselected";
   multiSelected?: boolean;
-  action?: (ctx: ActionType) => void;
-  deleted?: (ctx: ActionType) => void;
-  Component?: ((ctx: ActionType) => JSX.Element) | JSX.Element;
+  action?: (ctx: ActionType<T>) => void;
+  deleted?: (ctx: ActionType<T>) => void;
+  Component?: ((ctx: ActionType<T>) => JSX.Element) | JSX.Element;
   /** Open Component in a centered Dialog instead of a side Sheet */
   modal?: boolean;
 }
 
-export interface RenderType {
-  row: number | string | Record<string, unknown> | null;
+export interface RenderType<T = Record<string, unknown>> {
+  row: T | null;
   index: number;
-  data: Record<string, unknown>[];
+  data: T[];
   cell: string | number | Record<string, unknown> | null;
 }
-export interface ColumnType {
+export interface ColumnType<T = Record<string, unknown>> {
   title: string;
-  accessor: string;
+  accessor?: string;
   filterId?: string;
   type?: "date" | "currency";
   currency?: "PKR" | "SAR" | "EUR" | "JPY" | "USD" | "INR";
   format?: "en-PK" | "en-US" | "de-DE" | "ja-JP" | "en-IN";
-  render?: ({ row, index, data, cell }: RenderType) => void;
+  render?: ({ row, index, data, cell }: RenderType<T>) => React.ReactNode;
   className?: React.ComponentProps<"div">["className"];
 }
 export type ColumnKey = "title" | "accessor" | "filterId";
@@ -46,27 +46,28 @@ export interface ColumnFilterType {
   id: string;
   value: string;
 }
-export interface NewDropDownMenu {
+export interface NewDropDownMenu<T = Record<string, unknown>> {
   Trigger: () => React.ReactNode;
-  contents: () => ActionMenuList[];
+  contents: () => ActionMenuList<T>[];
 }
-export interface NewActionMenu {
-  dropdownMenu?: NewDropDownMenu[];
-  click?: () => ActionMenuList;
+export interface NewActionMenu<T = Record<string, unknown>> {
+  dropdownMenu?: NewDropDownMenu<T>[];
+  click?: () => ActionMenuList<T>;
   render?: () => React.ReactNode;
 }
-export interface ActionStateTypes {
-  Component: ((props: ActionType) => JSX.Element) | JSX.Element;
+export interface ActionStateTypes<T = Record<string, unknown>> {
+  Component: ((props: ActionType<T>) => JSX.Element) | JSX.Element;
   multiSelected?: boolean;
   title: string;
 }
-export type ExpandingTableType = (props: {
-  data: Record<string, unknown>[];
-  row: Record<string, unknown>;
-  index: number;
-}) => React.ReactNode;
-export type ActionMenuListType = () => ActionMenuList[];
-export type NewActionMenuType = () => NewActionMenu[];
+/** row first so `(row) => <Foo .../>` works without destructuring; index/data are there if you need them. */
+export type ExpandingTableType<T = Record<string, unknown>> = (
+  row: T,
+  index: number,
+  data: T[],
+) => React.ReactNode;
+export type ActionMenuListType<T = Record<string, unknown>> = () => ActionMenuList<T>[];
+export type NewActionMenuType<T = Record<string, unknown>> = () => NewActionMenu<T>[];
 
 export interface TableMainClassesType {
   tableClass?: ClassNameType;
@@ -79,15 +80,15 @@ export interface TableMainClassesType {
   tdBodyClass?: ClassNameType;
 }
 
-export interface TableTabsType {
-  data: Record<string, unknown>[];
-  columns: ColumnType[];
+export interface TableTabsType<T = Record<string, unknown>> {
+  data: T[];
+  columns: ColumnType<T>[];
   total?: number;
-  actionMenuList?: ActionMenuListType; // function to generate action menu items based on row data.
-  newActionMenu?: NewActionMenuType;
+  actionMenuList?: ActionMenuListType<T>; // function to generate action menu items based on row data.
+  newActionMenu?: NewActionMenuType<T>;
   expandable?: boolean;
   multiExpandable?: boolean;
-  ExpandingContent?: ExpandingTableType;
+  ExpandingContent?: ExpandingTableType<T>;
   titleTable?: string | JSX.Element;
   rowId?: string;
 }
