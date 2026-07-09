@@ -35,8 +35,9 @@ import TableMainBody from "./main/TableMainBody";
 
 // ─── Root props ───────────────────────────────────────────────────────────────
 
-interface TableRootProps<T = Record<string, unknown>>
-  extends TableMainClassesType {
+interface TableRootProps<
+  T = Record<string, unknown>,
+> extends TableMainClassesType {
   children: React.ReactNode;
   className?: ClassNameType;
 
@@ -44,6 +45,17 @@ interface TableRootProps<T = Record<string, unknown>>
   data?: T[];
   columns?: ColumnType<T>[];
   total?: number;
+
+  // Controlled state — omit any of these and Table manages it internally
+  // (today's default behavior). Provide a value + its setter together to
+  // lift that piece of state up, e.g. to coordinate a parent table's
+  // selection with a nested/expanded child table's selection.
+  selectedRows?: T[] | null;
+  setSelectedRows?: (rows: T[]) => void;
+  currentPage?: number;
+  setCurrentPage?: (page: number) => void;
+  dataLimit?: number;
+  setDataLimit?: (limit: number) => void;
 
   // Tab mode — supply tabs instead of data/columns
   tabs?: TableTabsType<T>[];
@@ -74,6 +86,12 @@ const TableRoot = <T = Record<string, unknown>,>({
   data: dataProp = [],
   columns: columnsProp = [],
   total: totalProp,
+  selectedRows: selectedRowsProp,
+  setSelectedRows: setSelectedRowsProp,
+  currentPage: currentPageProp,
+  setCurrentPage: setCurrentPageProp,
+  dataLimit: dataLimitProp,
+  setDataLimit: setDataLimitProp,
   tabs,
   actionMenuList: actionMenuListProp,
   newActionMenu: newActionMenuProp,
@@ -95,9 +113,16 @@ const TableRoot = <T = Record<string, unknown>,>({
   tdBodyClass,
 }: TableRootProps<T>) => {
   const [activeTabState, setActiveTabState] = useState(0);
-  const [selectedRows, setSelectedRows] = useState<T[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [dataLimit, setDataLimit] = useState(20);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [internalDataLimit, setInternalDataLimit] = useState(20);
+  // Controlled-if-provided: a consumer that passes both value + setter owns
+  // this state; otherwise Table falls back to managing it itself.
+  const selectedRows = selectedRowsProp;
+  const setSelectedRows = setSelectedRowsProp;
+  const currentPage = currentPageProp ?? internalCurrentPage;
+  const setCurrentPage = setCurrentPageProp ?? setInternalCurrentPage;
+  const dataLimit = dataLimitProp ?? internalDataLimit;
+  const setDataLimit = setDataLimitProp ?? setInternalDataLimit;
   const [fullScreen, setFullScreen] = useState(false);
   const [density, setDensity] = useState<TableDensity>("default");
   const [globalFilter, setGlobalFilter] = useState("");
@@ -125,7 +150,9 @@ const TableRoot = <T = Record<string, unknown>,>({
 
   const setActiveTab = (n: number) => {
     setActiveTabState(n);
-    setSelectedRows([]);
+    if (setSelectedRows) {
+      setSelectedRows([]);
+    }
     setCurrentPage(1);
     setShowOnlyColumns(tabs?.[n]?.columns ?? columnsProp);
     setColumnFilterFields([]);
@@ -156,7 +183,11 @@ const TableRoot = <T = Record<string, unknown>,>({
     setSelectedRows: setSelectedRows as unknown as (
       rows: Record<string, unknown>[],
     ) => void,
-    removeSelection: () => setSelectedRows([]),
+    removeSelection: () => {
+      if (setSelectedRows) {
+        setSelectedRows([]);
+      }
+    },
     currentPage,
     setCurrentPage,
     dataLimit,
@@ -183,7 +214,9 @@ const TableRoot = <T = Record<string, unknown>,>({
     stripedClass,
     expandable: curExpandable,
     multiExpandable: curMultiExp,
-    ExpandingContent: curExpContent as unknown as ExpandingTableType | undefined,
+    ExpandingContent: curExpContent as unknown as
+      | ExpandingTableType
+      | undefined,
     tableWrapperClass,
     tableClass,
     trHeadClass,
@@ -201,7 +234,7 @@ const TableRoot = <T = Record<string, unknown>,>({
         <div
           className={twMerge(
             clsx(
-              "min-w-0 overflow-hidden rounded-lg border border-border bg-background shadow-sm shadow-border",
+              "min-w-0 overflow-hidden rounded-none border border-border bg-background shadow-sm shadow-border",
               fullScreen &&
                 "flex flex-col h-full rounded-none border-none shadow-none",
               className,

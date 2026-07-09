@@ -22,7 +22,7 @@ import { ToggleRowSelection } from "../components/ToggleRowSelection";
 export interface TableMainBodyTypes extends TableMainClassesType {
   data: Record<string, unknown>[];
   columns: ColumnType[];
-  selectedRows?: Record<string, unknown>[];
+  selectedRows?: Record<string, unknown>[] | null;
   setSelectedRows?: (rows: Record<string, unknown>[]) => void;
   rowId?: "id" | "_id" | string;
 
@@ -120,14 +120,21 @@ const TableMainBody = ({
     </thead>
   );
   const TableBody = () => (
-    <tbody className={twMerge(`text-sm font-medium`, ` ${tBodyClass}`)}>
+    <tbody className={twMerge(`text-sm font-medium`, ` ${tBodyClass} `)}>
       {data?.map((item, index: number) => {
+        const expanded = isExpandable(
+          openExpandableRow,
+          index,
+          multiExpandable,
+          ExpandingContent,
+        );
         return (
           <React.Fragment key={index}>
             <tr
               key={index}
               className={twMerge(
                 `border-none hover:bg-accent ${striped && index % 2 !== 0 && stripedClass}`,
+                expanded && "bg-accent/70 hover:bg-accent/70",
                 `${trBodyClass}`,
               )}
             >
@@ -138,9 +145,8 @@ const TableMainBody = ({
                   setOpenExpandableRow,
                   index,
                   openExpandableRow,
-                  setSelectAll,
-                  setSelectedRows,
                   multiExpandable,
+                  expandingContent: ExpandingContent,
                 })}
 
               {/* for selection single td */}
@@ -148,7 +154,7 @@ const TableMainBody = ({
                 <td
                   className={twMerge(
                     `${tableInsideClass} `,
-                    `  ${tdBodyClass} `,
+                    `  ${tdBodyClass}`,
                   )}
                 >
                   {ToggleRowSelection(
@@ -174,12 +180,7 @@ const TableMainBody = ({
                   </td>
                 ))}
             </tr>
-            {isExpandable(
-              openExpandableRow,
-              index,
-              multiExpandable,
-              ExpandingContent,
-            ) && (
+            {expanded && (
               <ExtentableContent
                 index={index}
                 item={item}

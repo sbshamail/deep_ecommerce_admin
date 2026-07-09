@@ -2,25 +2,22 @@ import { ColumnType, ExpandingTableType } from "@/types/table_types";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface ExtendableArrowType {
-  setSelectAll: (bool: boolean) => void;
-  setSelectedRows: (rows: Record<string, unknown>[]) => void;
   openExpandableRow: number | number[];
   index: number;
   setOpenExpandableRow: (index: number | number[]) => void;
   multiExpandable?: boolean;
+  expandingContent?: unknown;
 }
 export const ExtendableArrow = ({
-  setSelectAll,
-  setSelectedRows,
   openExpandableRow,
   setOpenExpandableRow,
   index,
   multiExpandable,
+  expandingContent,
 }: ExtendableArrowType) => {
+  // Expanding/collapsing a row's detail is independent of row selection —
+  // it must not touch setSelectAll/setSelectedRows.
   const handleExpandRow = (index: number) => {
-    setSelectAll(false);
-    setSelectedRows([]);
-
     const toggleSingleExpand = () => {
       setOpenExpandableRow(index === openExpandableRow ? -1 : index);
     };
@@ -46,15 +43,16 @@ export const ExtendableArrow = ({
       toggleSingleExpand();
     }
   };
-  // console.log(isExpandable(openExpandableRow, index, multiExpandable));
+  const expanded = isExpandable(
+    openExpandableRow,
+    index,
+    multiExpandable,
+    expandingContent,
+  );
   return (
     <td className="relative h-0 cursor-pointer">
       <span className="" onClick={() => handleExpandRow(index)}>
-        {isExpandable(openExpandableRow, index, multiExpandable) ? (
-          <ChevronDown />
-        ) : (
-          <ChevronRight />
-        )}
+        {expanded ? <ChevronDown /> : <ChevronRight />}
       </span>
     </td>
   );

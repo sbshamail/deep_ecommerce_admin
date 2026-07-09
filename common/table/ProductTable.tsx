@@ -112,6 +112,7 @@ const CreateProductButton = ({
 const ProductTable = ({ products, total, categories }: ProductTableProps) => {
   const router = useRouter();
   const { user, canInShop } = useAuth();
+  const [selectedRows, setSelectedRows] = useState<ProductRead[]>([]);
 
   const canCreate = canInShop(user?.default_shop_id, "product:create");
   const canUpdate = canInShop(
@@ -144,7 +145,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       },
     ];
   };
-
+  console.log(selectedRows);
   return (
     <Table<ProductRead>
       data={products}
@@ -153,10 +154,22 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       rowId="id"
       striped
       showColumnFilter
+      selectedRows={selectedRows}
+      setSelectedRows={setSelectedRows}
       actionMenuList={canUpdate ? actionMenuList : undefined}
       expandable={true}
       ExpandingContent={(row: ProductRead) => (
-        <ProductVariantTable data={row?.variants || []} />
+        <ProductVariantTable
+          data={row?.variants || []}
+          onSelectionChange={(variantRows) => {
+            // Picking a specific variant is a different intent than bulk-
+            // selecting the whole product — drop the product from selection
+            // once any of its variants are selected.
+            if (variantRows.length > 0) {
+              setSelectedRows((prev) => prev.filter((r) => r.id !== row.id));
+            }
+          }}
+        />
       )}
       newActionMenu={
         canCreate
