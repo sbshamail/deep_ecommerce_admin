@@ -135,7 +135,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
           return (
             <ProductForm
               mode="update"
-              productId={row.id}
+              productId={row?.id}
               categories={categories}
               onSuccess={refresh}
               close={ctx.close}
@@ -145,7 +145,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       },
     ];
   };
-  console.log(selectedRows);
+
   return (
     <Table<ProductRead>
       data={products}

@@ -53,14 +53,14 @@ const ProductVariantTable = ({
       title: "Attributes",
       accessor: "attributes",
       render: ({ cell }) => {
-        console.log({ cell }, typeof cell);
-        if (!cell || typeof cell !== "object") {
+        const attributes = typeof cell === "string" ? JSON.parse(cell) : cell;
+        if (!attributes || typeof attributes !== "object") {
           return <span>—</span>;
         }
 
         return (
           <div className="space-y-1">
-            {Object.entries(cell as Record<string, unknown>).map(
+            {Object.entries(attributes as Record<string, unknown>).map(
               ([key, value]) => (
                 <div key={key}>
                   <strong>{key}:</strong> {String(value)}

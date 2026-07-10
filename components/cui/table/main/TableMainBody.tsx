@@ -59,7 +59,9 @@ const TableMainBody = ({
   trBodyClass,
   tdBodyClass,
 }: TableMainBodyTypes) => {
-  const [selectAll, setSelectAll] = useState(false);
+  const selectAll = Boolean(
+    data?.length && selectedRows?.length === data.length,
+  );
   // expendable states
 
   const [openExpandableRow, setOpenExpandableRow] = useState<number | number[]>(
@@ -69,12 +71,7 @@ const TableMainBody = ({
   const { dimension, divRef } = useDivDimensions(["resize"]);
 
   const toggle = useCallback(() => {
-    if (selectAll) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(data);
-    }
-    setSelectAll(!selectAll);
+    setSelectedRows(selectAll ? [] : data);
   }, [selectAll, setSelectedRows, data]);
 
   const TableHead = () => (
@@ -134,7 +131,9 @@ const TableMainBody = ({
               key={index}
               className={twMerge(
                 `border-none hover:bg-accent ${striped && index % 2 !== 0 && stripedClass}`,
-                expanded && "bg-accent/70 hover:bg-accent/70",
+                expanded &&
+                  `bg-accent/70 hover:bg-accent/70 [&>td]:border-r-0 [&>td]:border-y-2  [&>td]:border-foreground/50  ${!expanded && `opacity-50`}`,
+
                 `${trBodyClass}`,
               )}
             >
@@ -154,7 +153,7 @@ const TableMainBody = ({
                 <td
                   className={twMerge(
                     `${tableInsideClass} `,
-                    `  ${tdBodyClass}`,
+                    `  ${tdBodyClass}  `,
                   )}
                 >
                   {ToggleRowSelection(
