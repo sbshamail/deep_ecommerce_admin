@@ -123,7 +123,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
 
   const refresh = () => router.refresh();
 
-  const actionMenuList = (): ActionMenuList<ProductRead>[] => {
+  const actionMenuList = ({ rows }: { rows: ProductRead[] }): ActionMenuList<ProductRead>[] => {
     if (!canUpdate) return [];
     return [
       {
@@ -175,12 +175,15 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         canCreate
           ? () => [
               {
-                render: () => (
-                  <CreateProductButton
-                    categories={categories}
-                    onSuccess={refresh}
-                  />
-                ),
+                click: () => ({
+                  title: "Create New Entry",
+                  Icon: Plus,
+                  Component: (
+                    <p className="py-2 text-sm text-muted-foreground">
+                      Form fields go here — connect your inputs.
+                    </p>
+                  ),
+                }),
               },
             ]
           : undefined
@@ -200,6 +203,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         <Table.FilterBadges />
       </Table.Header>
       <Table.Body />
+
       <Table.Pagination />
     </Table>
   );

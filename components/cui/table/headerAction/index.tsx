@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 
-import { actionMenuContents, filterActionMenuCondition, openComponentAction } from "./function";
+import {
+  actionMenuContents,
+  filterActionMenuCondition,
+  openComponentAction,
+} from "./function";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +26,7 @@ import {
   ActionMenuListType,
   ActionStateTypes,
   ColumnType,
-  NewActionMenu,
+  NewActionMenuType,
   NewDropDownMenu,
 } from "@/types/table_types";
 import { FileDown, LayoutList } from "lucide-react";
@@ -38,7 +42,7 @@ interface TableHeaderActionType {
   actionMenuList?: ActionMenuListType;
   selectedRows: Record<string, unknown>[];
   setSelectedRows: (rows: Record<string, unknown>[]) => void;
-  newActionMenu?: () => NewActionMenu[];
+  newActionMenu?: NewActionMenuType;
   removeSelection: () => void;
   columns: ColumnType[];
   className?: ClassNameType;
@@ -108,7 +112,9 @@ const TableHeaderAction = ({
       );
     });
 
-  const mainActionMenu = actionMenuList ? actionMenuList() : undefined;
+  const mainActionMenu = actionMenuList
+    ? actionMenuList({ rows: selectedRows })
+    : undefined;
   const menuListCondition = filterActionMenuCondition(
     mainActionMenu,
     selectedRows,
@@ -181,7 +187,7 @@ const TableHeaderAction = ({
         )}
 
         {newActionMenu &&
-          newActionMenu().map((item, index) => (
+          newActionMenu({ rows: selectedRows }).map((item, index) => (
             <React.Fragment key={index}>
               {item.dropdownMenu && renderDropdowns(item.dropdownMenu)}
               {item.click && renderClickTrigger(item.click, index)}

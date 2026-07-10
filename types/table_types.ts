@@ -66,8 +66,13 @@ export type ExpandingTableType<T = Record<string, unknown>> = (
   index: number,
   data: T[],
 ) => React.ReactNode;
-export type ActionMenuListType<T = Record<string, unknown>> = () => ActionMenuList<T>[];
-export type NewActionMenuType<T = Record<string, unknown>> = () => NewActionMenu<T>[];
+export type menuTableType<T = Record<string, unknown>> = { rows: T[] };
+export type ActionMenuListType<T = Record<string, unknown>> = (
+  ctx: menuTableType<T>,
+) => ActionMenuList<T>[];
+export type NewActionMenuType<T = Record<string, unknown>> = (
+  ctx: menuTableType<T>,
+) => NewActionMenu<T>[];
 
 export interface TableMainClassesType {
   tableClass?: ClassNameType;
