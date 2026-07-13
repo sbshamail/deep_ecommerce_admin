@@ -72,19 +72,27 @@ export interface ProductSingleRead extends Omit<ProductRead, "variants"> {
   variants: ProductVariantRead[] | null;
 }
 
-// GET /category/list — a nested tree; the product form only allows picking a
-// leaf (no children), matching the backend's create/update validation.
-export interface CategoryTreeNode {
+// Backend's CategoryRead (category_model.py) — every field the single-record
+// shape carries.
+export interface CategoryRead {
   id: number;
   name: string;
   slug: string;
+  level: number;
+  icon: string | null;
+  image: MediaRead | null;
+  details: string | null;
   parent_id: number | null;
   root_id: number | null;
-  is_active?: boolean;
-  children: CategoryTreeNode[];
+  admin_commission_rate: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string | null;
 }
 
-export interface LeafCategoryOption {
-  id: number;
-  label: string;
+// GET /category/list — CategoryTreeRead is CategoryRead + children, so the
+// tree already carries every field a create/edit form needs; no separate
+// fetch-on-open is required the way ProductForm needs for variants.
+export interface CategoryTreeNode extends CategoryRead {
+  children: CategoryTreeNode[];
 }

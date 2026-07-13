@@ -6,22 +6,14 @@ import { useState } from "react";
 import { useAuth } from "@/auth/authContext";
 import ProductForm from "@/common/form/ProductForm";
 import Table from "@/components/cui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { LeafCategoryOption, ProductRead } from "@/types/product_types";
+import { CategoryTreeNode, ProductRead } from "@/types/product_types";
 import { ActionMenuList, ActionType, ColumnType } from "@/types/table_types";
 import ProductVariantTable from "./ProductVariantTable";
 
 interface ProductTableProps {
   products: ProductRead[];
   total: number;
-  categories: LeafCategoryOption[];
+  categories: CategoryTreeNode[];
 }
 
 const columns: ColumnType<ProductRead>[] = [
@@ -73,42 +65,6 @@ const columns: ColumnType<ProductRead>[] = [
   { title: "Created", accessor: "created_at", type: "date" },
 ];
 
-const CreateProductButton = ({
-  categories,
-  onSuccess,
-}: {
-  categories: LeafCategoryOption[];
-  onSuccess: () => void;
-}) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <Button
-        size="sm"
-        className="h-7 gap-1 text-xs"
-        onClick={() => setOpen(true)}
-      >
-        <Plus size={12} />
-        Create
-      </Button>
-      <SheetContent side="right">
-        <SheetHeader>
-          <SheetTitle>Create product</SheetTitle>
-        </SheetHeader>
-        <SheetBody>
-          <ProductForm
-            mode="create"
-            categories={categories}
-            onSuccess={onSuccess}
-            close={() => setOpen(false)}
-          />
-        </SheetBody>
-      </SheetContent>
-    </Sheet>
-  );
-};
-
 const ProductTable = ({ products, total, categories }: ProductTableProps) => {
   const router = useRouter();
   const { user, canInShop } = useAuth();
@@ -123,7 +79,11 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
 
   const refresh = () => router.refresh();
 
-  const actionMenuList = ({ rows }: { rows: ProductRead[] }): ActionMenuList<ProductRead>[] => {
+  const actionMenuList = ({
+    rows,
+  }: {
+    rows: ProductRead[];
+  }): ActionMenuList<ProductRead>[] => {
     if (!canUpdate) return [];
     return [
       {
@@ -139,6 +99,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
               categories={categories}
               onSuccess={refresh}
               close={ctx.close}
+              onDirtyChange={ctx.onDirtyChange}
             />
           );
         },
@@ -176,13 +137,20 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
           ? () => [
               {
                 click: () => ({
-                  title: "Create New Entry",
+                  title: "Create product",
                   Icon: Plus,
-                  Component: (
-                    <p className="py-2 text-sm text-muted-foreground">
-                      Form fields go here — connect your inputs.
-                    </p>
-                  ),
+
+                  Component: (ctx: ActionType<ProductRead>) => {
+                    return (
+                      <ProductForm
+                        mode="create"
+                        categories={categories}
+                        onSuccess={refresh}
+                        close={ctx.close}
+                        onDirtyChange={ctx.onDirtyChange}
+                      />
+                    );
+                  },
                 }),
               },
             ]

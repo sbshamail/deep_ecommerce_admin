@@ -7,9 +7,19 @@ export const filterActionMenuCondition = (
 ): ActionMenuList[] | undefined => {
   if (actionMenuList) {
     return actionMenuList.filter((item) => {
-      if (selectedRows?.length === 1 && item.visible === "selected") return item;
-      if (selectedRows?.length > 1 && item.visible === "selected" && item.multiSelected) return item;
-      if ((!selectedRows || selectedRows.length === 0) && item.visible === "unselected") return item;
+      if (selectedRows?.length === 1 && item.visible === "selected")
+        return item;
+      if (
+        selectedRows?.length > 1 &&
+        item.visible === "selected" &&
+        item.multiSelected
+      )
+        return item;
+      if (
+        (!selectedRows || selectedRows.length === 0) &&
+        item.visible === "unselected"
+      )
+        return item;
       if (!item.visible) return item;
     });
   }
@@ -76,7 +86,8 @@ export const actionMenuContents = (
     click: item?.action
       ? () => item.action!({ selectedRows, setSelectedRows, removeSelection })
       : item.deleted
-        ? () => item.deleted!({ setSelectedRows, selectedRows, removeSelection })
+        ? () =>
+            item.deleted!({ setSelectedRows, selectedRows, removeSelection })
         : item.Component
           ? () =>
               openComponentAction(

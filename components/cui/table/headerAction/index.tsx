@@ -6,6 +6,14 @@ import {
   openComponentAction,
 } from "./function";
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,19 +76,77 @@ const TableHeaderAction = ({
 }: TableHeaderActionType) => {
   // Sheet (side drawer) state
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [sheetContent, setSheetContent] =
+  const [sheetContent, setSheetContentRaw] =
     useState<ActionStateTypes>(emptyContent);
 
   // Dialog (centered modal) state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogContent, setDialogContent] =
+  const [dialogContent, setDialogContentRaw] =
     useState<ActionStateTypes>(emptyContent);
+
+  // Whether the currently-open Sheet/Dialog's rendered form has unsaved
+  // changes — reported via ActionType.onDirtyChange. Guards close attempts
+  // (X button, overlay click, ESC) behind a confirm prompt.
+  const [dirty, setDirty] = useState(false);
+  const [pendingClose, setPendingClose] = useState<"sheet" | "dialog" | null>(
+    null,
+  );
+
+  // The confirm AlertDialog is a separate Radix portal/layer from the
+  // Sheet/Dialog it's guarding, so Radix's DismissableLayer doesn't know
+  // they're related — clicking inside the AlertDialog registers as an
+  // "outside" pointerdown on the Sheet/Dialog underneath, independently
+  // re-triggering ITS dismiss logic (this fires via a deferred flushSync,
+  // so checking `pendingClose` state here is a timing race against our own
+  // button's onClick — check the actual click target instead).
+  const ignoreOutsideWhilePending = (e: {
+    preventDefault: () => void;
+    target: EventTarget | null;
+    detail?: { originalEvent?: { target?: EventTarget | null } };
+  }) => {
+    const target = (e.detail?.originalEvent?.target ??
+      e.target) as Element | null;
+    if (target?.closest('[data-slot="alert-dialog-content"]')) {
+      e.preventDefault();
+    }
+  };
+
+  // Opening a new item's content always starts clean.
+  const setSheetContent: typeof setSheetContentRaw = (value) => {
+    setDirty(false);
+    setSheetContentRaw(value);
+  };
+  const setDialogContent: typeof setDialogContentRaw = (value) => {
+    setDirty(false);
+    setDialogContentRaw(value);
+  };
 
   const toggleSheet = (open?: boolean) =>
     setSheetOpen((prev) => (open !== undefined ? open : !prev));
 
   const toggleDialog = (open?: boolean) =>
     setDialogOpen((prev) => (open !== undefined ? open : !prev));
+
+  const guardedOpenChange = (target: "sheet" | "dialog", next: boolean) => {
+    // While the confirm prompt is up, clicking it registers as an "outside"
+    // interaction on the Sheet/Dialog underneath (separate Radix portal),
+    // which re-fires this with next=false — ignore it so the prompt doesn't
+    // immediately reopen itself right after "Keep editing" closes it.
+    if (pendingClose !== null) return;
+    if (!next && dirty) {
+      setPendingClose(target);
+      return;
+    }
+    if (target === "sheet") setSheetOpen(next);
+    else setDialogOpen(next);
+  };
+
+  const confirmDiscardClose = () => {
+    if (pendingClose === "sheet") setSheetOpen(false);
+    else if (pendingClose === "dialog") setDialogOpen(false);
+    setDirty(false);
+    setPendingClose(null);
+  };
 
   const handleActionMenuContents = (
     listCondition: ActionMenuList[] | undefined,
@@ -147,6 +213,7 @@ const TableHeaderAction = ({
           selectedRows,
           setSelectedRows,
           close,
+          onDirtyChange: setDirty,
         })
       : state.Component;
 
@@ -187,7 +254,9 @@ const TableHeaderAction = ({
         )}
 
         {newActionMenu &&
-          newActionMenu({ rows: selectedRows }).map((item, index) => (
+          newActionMenu({
+            rows: selectedRows,
+          }).map((item, index) => (
             <React.Fragment key={index}>
               {item.dropdownMenu && renderDropdowns(item.dropdownMenu)}
               {item.click && renderClickTrigger(item.click, index)}
@@ -200,8 +269,15 @@ const TableHeaderAction = ({
       </div>
 
       {/* Side drawer — default for Component items */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right">
+      <Sheet
+        open={sheetOpen}
+        onOpenChange={(next) => guardedOpenChange("sheet", next)}
+      >
+        <SheetContent
+          side="right"
+          onPointerDownOutside={ignoreOutsideWhilePending}
+          onInteractOutside={ignoreOutsideWhilePending}
+        >
           <SheetHeader>
             <SheetTitle>{sheetContent.title}</SheetTitle>
           </SheetHeader>
@@ -212,8 +288,14 @@ const TableHeaderAction = ({
       </Sheet>
 
       {/* Centered dialog — for items with modal: true */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(next) => guardedOpenChange("dialog", next)}
+      >
+        <DialogContent
+          onPointerDownOutside={ignoreOutsideWhilePending}
+          onInteractOutside={ignoreOutsideWhilePending}
+        >
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
           </DialogHeader>
@@ -222,6 +304,33 @@ const TableHeaderAction = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* On Dirty Change */}
+      <AlertDialog
+        open={pendingClose !== null}
+        onOpenChange={(next) => !next && setPendingClose(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Closing now will lose them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingClose(null)}
+            >
+              Keep editing
+            </Button>
+            <Button type="button" onClick={confirmDiscardClose}>
+              Discard
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

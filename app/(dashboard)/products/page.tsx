@@ -1,7 +1,6 @@
 import { getAccessToken } from "@/auth/session";
 import ProductTable from "@/common/table/ProductTable";
 import { ApiError, authorizedFetchList, backendFetch } from "@/lib/api/server";
-import { flattenLeafCategories } from "@/lib/product/categories";
 import { CategoryTreeNode, ProductRead } from "@/types/product_types";
 
 const page = async () => {
@@ -45,11 +44,7 @@ const page = async () => {
   }
 
   return (
-    <ProductTable
-      products={products}
-      total={total}
-      categories={flattenLeafCategories(categoryTree)}
-    />
+    <ProductTable products={products} total={total} categories={categoryTree} />
   );
 };
 

@@ -11,6 +11,8 @@ export interface ActionType<T = Record<string, unknown>> {
   removeSelection: () => void;
   /** Closes the Sheet/Dialog this Component is rendering inside of. */
   close?: () => void;
+  /** Report unsaved-changes state so the Sheet/Dialog can confirm before closing. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export interface ActionMenuList<T = Record<string, unknown>> {

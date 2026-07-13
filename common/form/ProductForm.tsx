@@ -14,16 +14,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { LeafCategoryOption, ProductSingleRead } from "@/types/product_types";
+import { CategoryTreeNode, ProductSingleRead } from "@/types/product_types";
 
-import { productSchema, ProductFormValues } from "./schemas/productSchemas";
+import CategoryPicker from "./CategoryPicker";
+import { ProductFormValues, productSchema } from "./schemas/productSchemas";
 
 interface ProductFormProps {
   mode: "create" | "update";
   productId?: number;
-  categories: LeafCategoryOption[];
+  categories: CategoryTreeNode[];
   onSuccess?: () => void;
   close?: () => void;
+  /** Reports unsaved-changes state so the Sheet/Dialog owning this form can
+   * confirm before closing (see ActionType.onDirtyChange). */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const emptyValues: ProductFormValues = {
@@ -51,7 +55,8 @@ const toDefaultValues = (product: ProductSingleRead): ProductFormValues => {
     is_featured: product.is_featured,
     tags: (product.tags ?? []).join(", "),
     price: String(variant?.price ?? 0),
-    discount_price: variant?.discount_price != null ? String(variant.discount_price) : "",
+    discount_price:
+      variant?.discount_price != null ? String(variant.discount_price) : "",
     stock: String(variant?.stock ?? 0),
     sku: variant?.sku ?? "",
     meta_title: product.meta_title ?? "",
@@ -61,11 +66,19 @@ const toDefaultValues = (product: ProductSingleRead): ProductFormValues => {
 
 // Handles fetching the full single-record read (list rows only carry variant
 // ids, not price/stock/sku) before mounting the actual form in update mode.
-const ProductForm = ({ mode, productId, categories, onSuccess, close }: ProductFormProps) => {
+const ProductForm = ({
+  mode,
+  productId,
+  categories,
+  onSuccess,
+  close,
+  onDirtyChange,
+}: ProductFormProps) => {
   const [initialValues, setInitialValues] = useState<ProductFormValues | null>(
     mode === "create" ? emptyValues : null,
   );
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [variantImageUrl, setVariantImageUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,6 +95,9 @@ const ProductForm = ({ mode, productId, categories, onSuccess, close }: ProductF
         }
         setInitialValues(toDefaultValues(payload.product));
         setThumbnailUrl(payload.product.thumbnail?.original ?? null);
+        setVariantImageUrl(
+          payload.product.variants?.[0]?.image?.original ?? null,
+        );
       })
       .catch(() => !cancelled && setLoadError("Failed to load product"));
 
@@ -91,7 +107,8 @@ const ProductForm = ({ mode, productId, categories, onSuccess, close }: ProductF
   }, [mode, productId]);
 
   if (loadError) return <p className="text-sm text-destructive">{loadError}</p>;
-  if (!initialValues) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (!initialValues)
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
 
   return (
     <ProductFormBody
@@ -100,8 +117,10 @@ const ProductForm = ({ mode, productId, categories, onSuccess, close }: ProductF
       categories={categories}
       defaultValues={initialValues}
       initialThumbnailUrl={thumbnailUrl}
+      initialVariantImageUrl={variantImageUrl}
       onSuccess={onSuccess}
       close={close}
+      onDirtyChange={onDirtyChange}
     />
   );
 };
@@ -109,11 +128,13 @@ const ProductForm = ({ mode, productId, categories, onSuccess, close }: ProductF
 interface ProductFormBodyProps {
   mode: "create" | "update";
   productId?: number;
-  categories: LeafCategoryOption[];
+  categories: CategoryTreeNode[];
   defaultValues: ProductFormValues;
   initialThumbnailUrl: string | null;
+  initialVariantImageUrl: string | null;
   onSuccess?: () => void;
   close?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const ProductFormBody = ({
@@ -122,22 +143,45 @@ const ProductFormBody = ({
   categories,
   defaultValues,
   initialThumbnailUrl,
+  initialVariantImageUrl,
   onSuccess,
   close,
+  onDirtyChange,
 }: ProductFormBodyProps) => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialThumbnailUrl);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialThumbnailUrl,
+  );
+  const [variantImageFile, setVariantImageFile] = useState<File | null>(null);
+  const [variantPreviewUrl, setVariantPreviewUrl] = useState<string | null>(
+    initialVariantImageUrl,
+  );
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues,
   });
+  const isDirty =
+    form.formState.isDirty ||
+    Boolean(thumbnailFile) ||
+    Boolean(variantImageFile);
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setThumbnailFile(file);
     setPreviewUrl(file ? URL.createObjectURL(file) : initialThumbnailUrl);
+  };
+
+  const handleVariantImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setVariantImageFile(file);
+    setVariantPreviewUrl(
+      file ? URL.createObjectURL(file) : initialVariantImageUrl,
+    );
   };
 
   const onSubmit = async (values: ProductFormValues) => {
@@ -163,7 +207,9 @@ const ProductFormBody = ({
       JSON.stringify([
         {
           price: Number(values.price),
-          discount_price: values.discount_price ? Number(values.discount_price) : null,
+          discount_price: values.discount_price
+            ? Number(values.discount_price)
+            : null,
           stock: Number(values.stock),
           sku: values.sku || null,
         },
@@ -171,8 +217,14 @@ const ProductFormBody = ({
     );
 
     if (thumbnailFile) formData.set("thumbnail", thumbnailFile);
+    // NOTE: collected but not yet persisted server-side — ProductVariant.image
+    // is never populated by create_product/update_product today (see
+    // productRoute.py). Kept under this field name so a future backend fix
+    // has an obvious place to read it from.
+    if (variantImageFile) formData.set("variant_image", variantImageFile);
 
-    const url = mode === "create" ? "/api/product" : `/api/product/${productId}`;
+    const url =
+      mode === "create" ? "/api/product" : `/api/product/${productId}`;
     const res = await fetch(url, { method: "POST", body: formData });
 
     if (!res.ok) {
@@ -248,19 +300,12 @@ const ProductFormBody = ({
             <FormItem>
               <FormLabel>Category</FormLabel>
               <FormControl>
-                <select
-                  {...field}
-                  className="h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  <option value="" disabled>
-                    Select a category
-                  </option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
+                <CategoryPicker
+                  categories={categories}
+                  value={field.value ? Number(field.value) : null}
+                  onChange={(id) => field.onChange(id ? String(id) : "")}
+                  leafOnly
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -325,6 +370,27 @@ const ProductFormBody = ({
           />
         </div>
 
+        <div className="flex items-center gap-3">
+          {variantPreviewUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={variantPreviewUrl}
+              alt="Variant image preview"
+              className="h-14 w-14 rounded-md border border-border object-cover"
+            />
+          )}
+          <div className="flex-1 space-y-1">
+            <FormLabel htmlFor="variant-image">Variant image</FormLabel>
+            <input
+              id="variant-image"
+              type="file"
+              accept="image/*"
+              onChange={handleVariantImageChange}
+              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-transparent file:px-2.5 file:py-1 file:text-sm"
+            />
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="tags"
@@ -346,7 +412,10 @@ const ProductFormBody = ({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center gap-2 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
                 <FormLabel className="cursor-pointer">Active</FormLabel>
               </FormItem>
@@ -358,7 +427,10 @@ const ProductFormBody = ({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center gap-2 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
                 <FormLabel className="cursor-pointer">Featured</FormLabel>
               </FormItem>
@@ -394,9 +466,15 @@ const ProductFormBody = ({
           )}
         />
 
-        {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+        {serverError && (
+          <p className="text-sm text-destructive">{serverError}</p>
+        )}
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
           {form.formState.isSubmitting
             ? mode === "create"
               ? "Creating…"
