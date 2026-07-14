@@ -1,4 +1,4 @@
-import CategoryTable from "@/common/table/CategoryTable";
+import CategoryDropdown from "@/common/pages/CategoryDropdown";
 import { ApiError, backendFetch } from "@/lib/api/server";
 import { CategoryTreeNode } from "@/types/product_types";
 
@@ -19,7 +19,7 @@ const page = async () => {
     return <p className="text-sm text-destructive">{loadError}</p>;
   }
 
-  return <CategoryTable categories={categories} />;
+  return <CategoryDropdown categories={categories} />;
 };
 
 export default page;
