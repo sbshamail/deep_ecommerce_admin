@@ -23,6 +23,8 @@ interface CategoryFormProps {
   mode: "create" | "update";
   category?: CategoryRead;
   categories: CategoryTreeNode[];
+  /** Pre-fills the parent when creating a child from a specific node's "+". */
+  defaultParentId?: number | null;
   onSuccess?: () => void;
   close?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
@@ -35,6 +37,7 @@ const CategoryForm = ({
   mode,
   category,
   categories,
+  defaultParentId,
   onSuccess,
   close,
   onDirtyChange,
@@ -50,7 +53,11 @@ const CategoryForm = ({
     defaultValues: {
       name: category?.name ?? "",
       details: category?.details ?? "",
-      parent_id: category?.parent_id ? String(category.parent_id) : "",
+      parent_id: category?.parent_id
+        ? String(category.parent_id)
+        : defaultParentId
+          ? String(defaultParentId)
+          : "",
       icon: category?.icon ?? "",
       admin_commission_rate:
         category?.admin_commission_rate != null
