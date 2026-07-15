@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 import { useAuth } from "@/auth/authContext";
 import CategoryForm from "@/common/form/CategoryForm";
+import { LucideIcon } from "@/components/cui/Icon";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -104,7 +105,6 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
     setDeleteTarget(null);
     refresh();
   };
-  console.log(columns);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -152,7 +152,6 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
               ) : (
                 nodes.map((node) => {
                   const isSelected = selectedIds[colIndex] === node.id;
-
                   const hasChildren = node.children.length > 0;
                   const canAddChild = canCreate && node.level < MAX_LEVEL;
                   return (
@@ -183,7 +182,11 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
                               : "bg-muted text-muted-foreground",
                           )}
                         >
-                          {node.name.charAt(0).toUpperCase()}
+                          {node.icon ? (
+                            <LucideIcon name={node.icon} />
+                          ) : (
+                            node.name.charAt(0).toUpperCase()
+                          )}
                         </span>
                       )}
 

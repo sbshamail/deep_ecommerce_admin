@@ -36,6 +36,52 @@ export async function backendFetch<T>(path: string, init?: RequestInit): Promise
     : payload) as T;
 }
 
+// The backend's standard response shape (api_response in core/response.py).
+export interface ApiEnvelope<T = unknown> {
+  success?: number;
+  detail?: string;
+  data?: T;
+  total?: number;
+}
+
+/**
+ * Calls the backend and returns its FULL { success, detail, data, total }
+ * envelope plus the HTTP status — for Route Handlers that forward the result
+ * straight to the client (whose `fetching()` reads .detail and .data).
+ *
+ * Unlike backendFetch, this does NOT unwrap to `.data` and does NOT throw on
+ * an error status — the route forwards `detail` + `status` as-is (so the
+ * backend's own "Category Created Successfully" / validation messages reach
+ * the UI). Raw non-enveloped bodies (e.g. /user/me) are wrapped as { data }.
+ * Only a network/parse failure rejects, which the route's try/catch handles.
+ */
+export async function backendEnvelope<T = unknown>(
+  path: string,
+  init?: RequestInit,
+): Promise<{ status: number; envelope: ApiEnvelope<T> }> {
+  const res = await fetch(`${BACKEND_API_URL}${path}`, init);
+  const payload = await res.json().catch(() => null);
+  const isEnveloped =
+    payload !== null &&
+    typeof payload === "object" &&
+    ("data" in payload || "detail" in payload || "success" in payload);
+  const envelope: ApiEnvelope<T> = isEnveloped
+    ? (payload as ApiEnvelope<T>)
+    : { data: (payload ?? undefined) as T | undefined };
+  return { status: res.status, envelope };
+}
+
+export async function authorizedEnvelope<T = unknown>(
+  path: string,
+  token: string,
+  init: RequestInit = {},
+): Promise<{ status: number; envelope: ApiEnvelope<T> }> {
+  return backendEnvelope<T>(path, {
+    ...init,
+    headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` },
+  });
+}
+
 export async function authorizedFetch<T>(
   path: string,
   token: string,

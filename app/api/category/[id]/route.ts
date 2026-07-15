@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAccessToken } from "@/auth/session";
-import { ApiError, authorizedFetch } from "@/lib/api/server";
+import { ApiError, authorizedEnvelope } from "@/lib/api/server";
 import { CategoryRead } from "@/types/product_types";
 
 // PUT /category/update/{id} — multipart/form-data, forwarded unchanged.
@@ -16,11 +16,12 @@ export async function PUT(
   const formData = await request.formData();
 
   try {
-    const category = await authorizedFetch<CategoryRead>(`/category/update/${id}`, token, {
-      method: "PUT",
-      body: formData,
-    });
-    return NextResponse.json({ detail: "Category updated", category });
+    const { status, envelope } = await authorizedEnvelope<CategoryRead>(
+      `/category/update/${id}`,
+      token,
+      { method: "PUT", body: formData },
+    );
+    return NextResponse.json(envelope, { status });
   } catch (err) {
     const status = err instanceof ApiError ? err.status : 500;
     const detail = err instanceof ApiError ? err.message : "Failed to update category";
@@ -40,8 +41,12 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await authorizedFetch(`/category/delete/${id}`, token, { method: "DELETE" });
-    return NextResponse.json({ detail: "Category deleted" });
+    const { status, envelope } = await authorizedEnvelope(
+      `/category/delete/${id}`,
+      token,
+      { method: "DELETE" },
+    );
+    return NextResponse.json(envelope, { status });
   } catch (err) {
     const status = err instanceof ApiError ? err.status : 500;
     const detail = err instanceof ApiError ? err.message : "Failed to delete category";

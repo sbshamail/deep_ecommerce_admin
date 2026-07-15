@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAccessToken } from "@/auth/session";
-import { ApiError, authorizedFetch, backendFetch } from "@/lib/api/server";
+import { ApiError, authorizedEnvelope, backendFetch } from "@/lib/api/server";
 import { ProductSingleRead } from "@/types/product_types";
 
 // GET /product/read/{id} is public on the backend (no auth dependency).
@@ -35,11 +35,12 @@ export async function POST(
   const formData = await request.formData();
 
   try {
-    const product = await authorizedFetch<ProductSingleRead>(`/product/update/${id}`, token, {
-      method: "POST",
-      body: formData,
-    });
-    return NextResponse.json({ detail: "Product updated", product });
+    const { status, envelope } = await authorizedEnvelope<ProductSingleRead>(
+      `/product/update/${id}`,
+      token,
+      { method: "POST", body: formData },
+    );
+    return NextResponse.json(envelope, { status });
   } catch (err) {
     const status = err instanceof ApiError ? err.status : 500;
     const detail = err instanceof ApiError ? err.message : "Failed to update product";

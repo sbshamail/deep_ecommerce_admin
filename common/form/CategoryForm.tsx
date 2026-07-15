@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { fetching } from "@/lib/api/client";
 import { CategoryRead, CategoryTreeNode } from "@/types/product_types";
 
 import CategoryPicker from "./CategoryPicker";
@@ -75,32 +76,41 @@ const CategoryForm = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
-    setPreviewUrl(file ? URL.createObjectURL(file) : category?.image?.original ?? null);
+    setPreviewUrl(
+      file ? URL.createObjectURL(file) : (category?.image?.original ?? null),
+    );
   };
 
   const onSubmit = async (values: CategoryFormValues) => {
     setServerError(null);
 
-    const formData = new FormData();
-    formData.set("name", values.name);
-    formData.set("details", values.details ?? "");
-    formData.set("parent_id", values.parent_id || "0");
-    formData.set("icon", values.icon ?? "");
-    formData.set("admin_commission_rate", values.admin_commission_rate ?? "");
-    formData.set("is_active", String(values.is_active));
-    if (imageFile) formData.set("image", imageFile);
-
-    const url = mode === "create" ? "/api/category" : `/api/category/${category?.id}`;
-    const res = await fetch(url, {
+    // Just hand `fetching` a plain object with `isFormdata` — it converts to
+    // multipart (files included) and omits undefined/null/"" fields. So a
+    // top-level category sends no parent_id (not the bogus "0" it used to),
+    // an empty commission is left off, and parent_id/rate go as real numbers.
+    const res = await fetching({
+      url:
+        mode === "create" ? "/api/category" : `/api/category/${category?.id}`,
       method: mode === "create" ? "POST" : "PUT",
-      body: formData,
+      isFormdata: true,
+      body: {
+        name: values.name,
+        details: values.details,
+        parent_id: values.parent_id ? Number(values.parent_id) : undefined,
+        icon: values.icon,
+        admin_commission_rate: values.admin_commission_rate
+          ? Number(values.admin_commission_rate)
+          : undefined,
+        is_active: values.is_active,
+        image: imageFile ?? undefined,
+      },
     });
 
     if (!res.ok) {
-      const payload = await res.json().catch(() => null);
-      setServerError(payload?.detail ?? "Something went wrong");
+      setServerError(res.detail ?? "Something went wrong");
       return;
     }
+    console.log(res);
 
     onSuccess?.();
     close?.();
@@ -203,7 +213,13 @@ const CategoryForm = ({
               <FormItem>
                 <FormLabel>Commission rate</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" min={0} placeholder="Optional" {...field} />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    placeholder="Optional"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -217,16 +233,25 @@ const CategoryForm = ({
           render={({ field }) => (
             <FormItem className="flex flex-row items-center gap-2 space-y-0">
               <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <FormLabel className="cursor-pointer">Active</FormLabel>
             </FormItem>
           )}
         />
 
-        {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+        {serverError && (
+          <p className="text-sm text-destructive">{serverError}</p>
+        )}
 
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
           {form.formState.isSubmitting
             ? mode === "create"
               ? "Creating…"

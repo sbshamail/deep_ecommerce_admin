@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAccessToken } from "@/auth/session";
-import { ApiError, authorizedFetch, authorizedFetchList } from "@/lib/api/server";
+import { ApiError, authorizedEnvelope, authorizedFetchList } from "@/lib/api/server";
 import { ProductRead, ProductSingleRead } from "@/types/product_types";
 
 // GET /product/my-products — shop-scoped, requires product:create or
@@ -37,11 +37,12 @@ export async function POST(request: Request) {
   const formData = await request.formData();
 
   try {
-    const product = await authorizedFetch<ProductSingleRead>("/product/create", token, {
-      method: "POST",
-      body: formData,
-    });
-    return NextResponse.json({ detail: "Product created", product }, { status: 201 });
+    const { status, envelope } = await authorizedEnvelope<ProductSingleRead>(
+      "/product/create",
+      token,
+      { method: "POST", body: formData },
+    );
+    return NextResponse.json(envelope, { status });
   } catch (err) {
     const status = err instanceof ApiError ? err.status : 500;
     const detail = err instanceof ApiError ? err.message : "Failed to create product";
