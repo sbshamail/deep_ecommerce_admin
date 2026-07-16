@@ -23,7 +23,7 @@ interface ProductFormProps {
   mode: "create" | "update";
   productId?: number;
   categories: CategoryTreeNode[];
-  onSuccess?: () => void;
+  onSuccess?: (product: ProductSingleRead) => void;
   close?: () => void;
   /** Reports unsaved-changes state so the Sheet/Dialog owning this form can
    * confirm before closing (see ActionType.onDirtyChange). */
@@ -85,18 +85,18 @@ const ProductForm = ({
     if (mode !== "update" || !productId) return;
 
     let cancelled = false;
-    fetch(`/api/product/${productId}`)
+    fetch(`/api/product/read/${productId}`)
       .then((res) => res.json())
-      .then((payload: { product?: ProductSingleRead; detail?: string }) => {
+      .then((payload: { data?: ProductSingleRead; detail?: string }) => {
         if (cancelled) return;
-        if (!payload.product) {
+        if (!payload.data) {
           setLoadError(payload.detail ?? "Failed to load product");
           return;
         }
-        setInitialValues(toDefaultValues(payload.product));
-        setThumbnailUrl(payload.product.thumbnail?.original ?? null);
+        setInitialValues(toDefaultValues(payload.data));
+        setThumbnailUrl(payload.data.thumbnail?.original ?? null);
         setVariantImageUrl(
-          payload.product.variants?.[0]?.image?.original ?? null,
+          payload.data.variants?.[0]?.image?.original ?? null,
         );
       })
       .catch(() => !cancelled && setLoadError("Failed to load product"));
@@ -132,7 +132,7 @@ interface ProductFormBodyProps {
   defaultValues: ProductFormValues;
   initialThumbnailUrl: string | null;
   initialVariantImageUrl: string | null;
-  onSuccess?: () => void;
+  onSuccess?: (product: ProductSingleRead) => void;
   close?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
 }
@@ -224,16 +224,21 @@ const ProductFormBody = ({
     if (variantImageFile) formData.set("variant_image", variantImageFile);
 
     const url =
-      mode === "create" ? "/api/product" : `/api/product/${productId}`;
+      mode === "create"
+        ? "/api/product/create"
+        : `/api/product/update/${productId}`;
     const res = await fetch(url, { method: "POST", body: formData });
+    const payload = (await res.json().catch(() => null)) as {
+      data?: ProductSingleRead;
+      detail?: string;
+    } | null;
 
-    if (!res.ok) {
-      const payload = await res.json().catch(() => null);
+    if (!res.ok || !payload?.data) {
       setServerError(payload?.detail ?? "Something went wrong");
       return;
     }
 
-    onSuccess?.();
+    onSuccess?.(payload.data);
     close?.();
   };
 

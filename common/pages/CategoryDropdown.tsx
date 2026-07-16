@@ -1,7 +1,6 @@
 "use client";
 import { ChevronRight, FolderTree, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { useAuth } from "@/auth/authContext";
@@ -22,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { removeTreeNode, upsertTreeNode } from "@/lib/list";
 import { cn } from "@/lib/utils";
 import { CategoryRead, CategoryTreeNode } from "@/types/product_types";
 
@@ -38,15 +38,25 @@ type FormState =
   | { mode: "create"; parentId: number | null }
   | { mode: "update"; category: CategoryRead };
 
-// Selection is tracked by id (not node reference) so it survives the
-// router.refresh() that re-fetches `categories` after every mutation.
+// Selection is tracked by id (not node reference) so it survives a tree
+// patch (create/update/delete) after every mutation.
 const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
-  const router = useRouter();
   const { can } = useAuth();
 
   const canCreate = can("category:create");
   const canUpdate = can("category:create", "category:update");
   const canDelete = can("category:delete");
+
+  // A fresh `categories` prop means the server re-fetched (e.g. navigation) —
+  // resync local state to it rather than keep stale patched data. Adjusted
+  // during render (not an effect) per React's "adjusting state on prop
+  // change" pattern — avoids an extra render pass.
+  const [prevCategories, setPrevCategories] = useState(categories);
+  const [tree, setTree] = useState(categories);
+  if (categories !== prevCategories) {
+    setPrevCategories(categories);
+    setTree(categories);
+  }
 
   const [rawSelectedIds, setSelectedIds] = useState<number[]>([]);
   const [form, setForm] = useState<FormState | null>(null);
@@ -54,10 +64,10 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
   // (not an effect) so it stays correct across refreshes without extra renders.
   const selectedIds = useMemo(
     () =>
-      rawSelectedIds.length === 0 && categories.length > 0
-        ? [categories[0].id]
+      rawSelectedIds.length === 0 && tree.length > 0
+        ? [tree[0].id]
         : rawSelectedIds,
-    [rawSelectedIds, categories],
+    [rawSelectedIds, tree],
   );
 
   const [deleteTarget, setDeleteTarget] = useState<CategoryTreeNode | null>(
@@ -69,8 +79,8 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
   // Resolve the selected node at each depth from the current tree, stopping
   // as soon as a level has no selection. columns[0] is always the roots.
   const columns = useMemo(() => {
-    const cols: CategoryTreeNode[][] = [categories];
-    let level = categories;
+    const cols: CategoryTreeNode[][] = [tree];
+    let level = tree;
     for (let i = 0; i < selectedIds.length; i++) {
       const node = level.find((n) => n.id === selectedIds[i]);
       if (!node || node.children.length === 0) break;
@@ -78,7 +88,7 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
       level = node.children;
     }
     return cols;
-  }, [categories, selectedIds]);
+  }, [tree, selectedIds]);
 
   // Build from the derived selectedIds (which includes the auto-selected
   // root), NOT rawSelectedIds — otherwise selecting a deeper column would
@@ -86,13 +96,11 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
   const selectAt = (colIndex: number, id: number) =>
     setSelectedIds([...selectedIds.slice(0, colIndex), id]);
 
-  const refresh = () => router.refresh();
-
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
     setDeleteError(null);
-    const res = await fetch(`/api/category/${deleteTarget.id}`, {
+    const res = await fetch(`/api/category/delete/${deleteTarget.id}`, {
       method: "DELETE",
     });
     setDeleting(false);
@@ -102,8 +110,9 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
       setDeleteError(payload?.detail ?? "Failed to delete category");
       return;
     }
+    setTree((prev) => removeTreeNode(prev, deleteTarget.id));
+    setSelectedIds((prev) => prev.filter((id) => id !== deleteTarget.id));
     setDeleteTarget(null);
-    refresh();
   };
   return (
     <div className="space-y-4">
@@ -269,8 +278,12 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
               defaultParentId={
                 form.mode === "create" ? form.parentId : undefined
               }
-              categories={categories}
-              onSuccess={refresh}
+              categories={tree}
+              onSuccess={(saved) =>
+                setTree((prev) =>
+                  upsertTreeNode(prev, { ...saved, children: [] }),
+                )
+              }
               close={() => setForm(null)}
             />
           )}

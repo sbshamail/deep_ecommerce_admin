@@ -26,7 +26,7 @@ interface CategoryFormProps {
   categories: CategoryTreeNode[];
   /** Pre-fills the parent when creating a child from a specific node's "+". */
   defaultParentId?: number | null;
-  onSuccess?: () => void;
+  onSuccess?: (category: CategoryRead) => void;
   close?: () => void;
   onDirtyChange?: (dirty: boolean) => void;
 }
@@ -88,9 +88,11 @@ const CategoryForm = ({
     // multipart (files included) and omits undefined/null/"" fields. So a
     // top-level category sends no parent_id (not the bogus "0" it used to),
     // an empty commission is left off, and parent_id/rate go as real numbers.
-    const res = await fetching({
+    const res = await fetching<CategoryRead>({
       url:
-        mode === "create" ? "/api/category" : `/api/category/${category?.id}`,
+        mode === "create"
+          ? "/api/category/create"
+          : `/api/category/update/${category?.id}`,
       method: mode === "create" ? "POST" : "PUT",
       isFormdata: true,
       body: {
@@ -106,13 +108,11 @@ const CategoryForm = ({
       },
     });
 
-    if (!res.ok) {
+    if (!res.ok || !res.data) {
       setServerError(res.detail ?? "Something went wrong");
       return;
     }
-    console.log(res);
-
-    onSuccess?.();
+    onSuccess?.(res.data);
     close?.();
   };
 

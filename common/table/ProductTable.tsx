@@ -1,12 +1,16 @@
 "use client";
 import { Pencil, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/auth/authContext";
 import ProductForm from "@/common/form/ProductForm";
 import Table from "@/components/cui/table";
-import { CategoryTreeNode, ProductRead } from "@/types/product_types";
+import { upsertById } from "@/lib/list";
+import {
+  CategoryTreeNode,
+  ProductRead,
+  ProductSingleRead,
+} from "@/types/product_types";
 import { ActionMenuList, ActionType, ColumnType } from "@/types/table_types";
 import ProductVariantTable from "./ProductVariantTable";
 
@@ -65,9 +69,29 @@ const columns: ColumnType<ProductRead>[] = [
   { title: "Created", accessor: "created_at", type: "date" },
 ];
 
+// ProductSingleRead.variants carries a wider shape than the list row's
+// ProductVariantBase (price nullable, extra fields) — normalize so a
+// create/update response can drop straight into the table's row list.
+const toProductRow = (product: ProductSingleRead): ProductRead => ({
+  ...product,
+  variants:
+    product.variants?.map((v) => ({ ...v, price: v.price ?? 0 })) ?? null,
+});
+
 const ProductTable = ({ products, total, categories }: ProductTableProps) => {
-  const router = useRouter();
   const { user, canInShop } = useAuth();
+  // A fresh `products` prop means the server re-fetched (e.g. navigation) —
+  // resync local state to it rather than keep stale patched rows. Adjusted
+  // during render (not an effect) per React's "adjusting state on prop
+  // change" pattern — avoids an extra render pass.
+  const [prevProducts, setPrevProducts] = useState(products);
+  const [rows, setRows] = useState(products);
+  const [rowTotal, setRowTotal] = useState(total);
+  if (products !== prevProducts) {
+    setPrevProducts(products);
+    setRows(products);
+    setRowTotal(total);
+  }
   const [selectedRows, setSelectedRows] = useState<ProductRead[]>([]);
 
   const canCreate = canInShop(user?.default_shop_id, "product:create");
@@ -76,8 +100,6 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
     "product:create",
     "product:update",
   );
-
-  const refresh = () => router.refresh();
 
   const actionMenuList = ({
     rows,
@@ -97,7 +119,9 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
               mode="update"
               productId={row?.id}
               categories={categories}
-              onSuccess={refresh}
+              onSuccess={(updated) =>
+                setRows((prev) => upsertById(prev, toProductRow(updated)))
+              }
               close={ctx.close}
               onDirtyChange={ctx.onDirtyChange}
             />
@@ -109,9 +133,9 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
 
   return (
     <Table<ProductRead>
-      data={products}
+      data={rows}
       columns={columns}
-      total={total}
+      total={rowTotal}
       rowId="id"
       striped
       showColumnFilter
@@ -145,7 +169,12 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
                       <ProductForm
                         mode="create"
                         categories={categories}
-                        onSuccess={refresh}
+                        onSuccess={(created) => {
+                          setRows((prev) =>
+                            upsertById(prev, toProductRow(created)),
+                          );
+                          setRowTotal((prev) => prev + 1);
+                        }}
                         close={ctx.close}
                         onDirtyChange={ctx.onDirtyChange}
                       />
