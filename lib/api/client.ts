@@ -98,13 +98,14 @@ export async function fetching<T = unknown>({
     const payload = (await res.json().catch(() => null)) as {
       data?: T;
       detail?: string;
+      message?: string;
     } | null;
 
     return {
       ok: res.ok,
       status: res.status,
       data: payload?.data,
-      detail: payload?.detail,
+      detail: payload?.detail ?? payload?.message,
     };
   } catch {
     return { ok: false, status: 0, detail: "Network error" };

@@ -20,8 +20,12 @@ export class ApiError extends Error {
  *  - a few endpoints (e.g. /user/me) return a raw body with no envelope —
  *    those pass through unchanged since there's no `.data` key to unwrap.
  */
-export async function backendFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BACKEND_API_URL}${path}`, init);
+export async function backendFetch<T>(
+  path: string,
+  init?: RequestInit,
+  baseUrl: string = BACKEND_API_URL,
+): Promise<T> {
+  const res = await fetch(`${baseUrl}${path}`, init);
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
@@ -31,9 +35,11 @@ export async function backendFetch<T>(path: string, init?: RequestInit): Promise
     );
   }
 
-  return (payload && typeof payload === "object" && "data" in payload
-    ? payload.data
-    : payload) as T;
+  return (
+    payload && typeof payload === "object" && "data" in payload
+      ? payload.data
+      : payload
+  ) as T;
 }
 
 // The backend's standard response shape (api_response in core/response.py).
@@ -58,8 +64,9 @@ export interface ApiEnvelope<T = unknown> {
 export async function backendEnvelope<T = unknown>(
   path: string,
   init?: RequestInit,
+  baseUrl: string = BACKEND_API_URL,
 ): Promise<{ status: number; envelope: ApiEnvelope<T> }> {
-  const res = await fetch(`${BACKEND_API_URL}${path}`, init);
+  const res = await fetch(`${baseUrl}${path}`, init);
   const payload = await res.json().catch(() => null);
   const isEnveloped =
     payload !== null &&
@@ -75,25 +82,35 @@ export async function authorizedEnvelope<T = unknown>(
   path: string,
   token: string,
   init: RequestInit = {},
+  baseUrl: string = BACKEND_API_URL,
 ): Promise<{ status: number; envelope: ApiEnvelope<T> }> {
-  return backendEnvelope<T>(path, {
-    ...init,
-    headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` },
-  });
+  return backendEnvelope<T>(
+    path,
+    {
+      ...init,
+      headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` },
+    },
+    baseUrl,
+  );
 }
 
 export async function authorizedFetch<T>(
   path: string,
   token: string,
   init: RequestInit = {},
+  baseUrl: string = BACKEND_API_URL,
 ): Promise<T> {
-  return backendFetch<T>(path, {
-    ...init,
-    headers: {
-      ...(init.headers ?? {}),
-      Authorization: `Bearer ${token}`,
+  return backendFetch<T>(
+    path,
+    {
+      ...init,
+      headers: {
+        ...(init.headers ?? {}),
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+    baseUrl,
+  );
 }
 
 /**
@@ -116,7 +133,10 @@ export async function authorizedFetchList<T>(
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, payload?.detail ?? payload?.message ?? "Request failed");
+    throw new ApiError(
+      res.status,
+      payload?.detail ?? payload?.message ?? "Request failed",
+    );
   }
 
   return { data: payload?.data ?? [], total: payload?.total ?? 0 };

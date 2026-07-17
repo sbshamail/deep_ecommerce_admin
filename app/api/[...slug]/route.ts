@@ -1,39 +1,42 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getAccessToken } from "@/auth/session";
-import { backendEnvelope } from "@/lib/api/server";
+import { BACKEND_API_URL, backendEnvelope } from "@/lib/api/server";
 
 /**
  * Generic pass-through proxy: /api/<slug> → FastAPI's /<slug>, same method,
  * same body, same query string. The slug IS the real backend path — e.g.
  * `/api/category/create` calls backend `/category/create`,
- * `/api/product/update/5` calls backend `/product/update/5`.
+ * `/api/contract/update/5` calls backend `/contract/update/5`.
  *
  * Why this exists instead of one route.ts file per resource: every one of
  * those files was doing the exact same thing (attach token if present,
- * forward body, wrap the { success, detail, data } envelope). The backend
+ * forward body, wrap the { success, status, message } envelope). The backend
  * is already the source of truth for what routes exist — we don't need to
  * re-declare that shape on the frontend too.
  *
- * A more specific file (e.g. app/api/product/[id]/route.ts) always wins over
+ * A more specific file (e.g. app/api/contract/[id]/route.ts) always wins over
  * this catch-all for the same path — that's plain Next.js routing, verified
  * live, not something this file has to account for. So if one resource ever
  * needs custom behavior (extra query defaults, setting a cookie, etc.), just
  * add its own route.ts next to this one and it takes over automatically.
  *
- * ALLOWED_RESOURCES is the actual security boundary: only these top-level
- * backend resources are reachable through this proxy at all. Auth itself is
- * still enforced by the backend per-endpoint (this just attaches the token
- * when one exists and lets the backend decide if it's required).
+ * RESOURCE_BACKENDS is a per-resource OVERRIDE table: everything proxies to
+ * BACKEND_API_URL by default, so you only add an entry when a resource lives
+ * on a DIFFERENT backend server (point it at that server's env var). Auth is
+ * still enforced by each backend per-endpoint (this just attaches the token
+ * when one exists).
  */
-const ALLOWED_RESOURCES = ["category", "product"];
+const RESOURCE_BACKENDS: Record<string, string> = {
+  // Example — a resource served by a DIFFERENT backend:
+  // weather: process.env.OTHER_API_URL ?? "",
+};
 
 async function proxy(request: NextRequest, slugParts: string[]) {
   const [resource, ...rest] = slugParts;
-  if (!ALLOWED_RESOURCES.includes(resource)) {
-    return NextResponse.json({ detail: "Not found" }, { status: 404 });
-  }
+  // Different server if listed, otherwise the default backend.
+  const baseUrl = RESOURCE_BACKENDS[resource] ?? BACKEND_API_URL;
 
   const backendPath = `/${resource}${rest.length ? `/${rest.join("/")}` : ""}${request.nextUrl.search}`;
 
@@ -51,11 +54,15 @@ async function proxy(request: NextRequest, slugParts: string[]) {
   }
 
   try {
-    const { status, envelope } = await backendEnvelope(backendPath, {
-      method: request.method,
-      headers,
-      body: hasBody ? await request.blob() : undefined,
-    });
+    const { status, envelope } = await backendEnvelope(
+      backendPath,
+      {
+        method: request.method,
+        headers,
+        body: hasBody ? await request.blob() : undefined,
+      },
+      baseUrl,
+    );
     return NextResponse.json(envelope, { status });
   } catch {
     return NextResponse.json(
