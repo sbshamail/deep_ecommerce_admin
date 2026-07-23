@@ -221,7 +221,7 @@ const TableHeaderAction = ({
   // (title/Icon/Component/modal) instead of building its own trigger + Sheet
   // or Dialog — this renders that trigger and opens it into the shared ones.
   const renderClickTrigger = (getItem: () => ActionMenuList, index: number) => {
-    const item = getItem();
+    const item = getItem(); //we did click is the function itself for future if we need to pass something
     return (
       <Button
         key={index}
@@ -275,6 +275,10 @@ const TableHeaderAction = ({
       >
         <SheetContent
           side="right"
+          resizable={sheetContent.sheetResizable}
+          defaultWidth={sheetContent.sheetWidth?.default}
+          minWidth={sheetContent.sheetWidth?.min}
+          maxWidth={sheetContent.sheetWidth?.max}
           onPointerDownOutside={ignoreOutsideWhilePending}
           onInteractOutside={ignoreOutsideWhilePending}
         >

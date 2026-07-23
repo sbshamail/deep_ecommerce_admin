@@ -1,4 +1,8 @@
-import { ActionMenuList, ActionStateTypes } from "@/types/table_types";
+import {
+  ActionMenuList,
+  ActionStateTypes,
+  SheetWidthConfig,
+} from "@/types/table_types";
 import { Dispatch, JSX, SetStateAction } from "react";
 
 export const filterActionMenuCondition = (
@@ -31,9 +35,18 @@ export const handleActionMenu = (
   Component: JSX.Element,
   title: string,
   multiSelected?: boolean,
+  sheetResizable?: boolean,
+  sheetWidth?: SheetWidthConfig,
 ) => {
   toggle();
-  setContent((prev) => ({ ...prev, Component, title, multiSelected }));
+  setContent((prev) => ({
+    ...prev,
+    Component,
+    title,
+    multiSelected,
+    sheetResizable,
+    sheetWidth,
+  }));
 };
 
 /**
@@ -50,6 +63,7 @@ export const openComponentAction = (
   toggleModal?: () => void,
   setModalContent?: Dispatch<SetStateAction<ActionStateTypes>>,
 ) => {
+  // if item.modal is set, open into a Dialog
   if (item.modal && toggleModal && setModalContent) {
     handleActionMenu(
       toggleModal,
@@ -57,7 +71,10 @@ export const openComponentAction = (
       item.Component as JSX.Element,
       item.title,
       item.multiSelected,
+      item.sheetResizable,
+      item.sheetWidth,
     );
+    // otherwise, open into a Sheet/Drawer
   } else {
     handleActionMenu(
       toggleDrawer,
@@ -65,6 +82,8 @@ export const openComponentAction = (
       item.Component as JSX.Element,
       item.title,
       item.multiSelected,
+      item.sheetResizable,
+      item.sheetWidth,
     );
   }
 };

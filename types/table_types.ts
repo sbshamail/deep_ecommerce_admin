@@ -15,6 +15,12 @@ export interface ActionType<T = Record<string, unknown>> {
   onDirtyChange?: (dirty: boolean) => void;
 }
 
+export interface SheetWidthConfig {
+  default: number;
+  min: number;
+  max: number;
+}
+
 export interface ActionMenuList<T = Record<string, unknown>> {
   title: string;
   Icon?: React.ElementType;
@@ -25,6 +31,9 @@ export interface ActionMenuList<T = Record<string, unknown>> {
   Component?: ((ctx: ActionType<T>) => JSX.Element) | JSX.Element;
   /** Open Component in a centered Dialog instead of a side Sheet */
   modal?: boolean;
+  /** Opens the side Sheet wide and lets the user drag its edge to resize. */
+  sheetResizable?: boolean;
+  sheetWidth?: SheetWidthConfig;
 }
 
 export interface RenderType<T = Record<string, unknown>> {
@@ -61,6 +70,8 @@ export interface ActionStateTypes<T = Record<string, unknown>> {
   Component: ((props: ActionType<T>) => JSX.Element) | JSX.Element;
   multiSelected?: boolean;
   title: string;
+  sheetResizable?: boolean;
+  sheetWidth?: SheetWidthConfig;
 }
 /** row first so `(row) => <Foo .../>` works without destructuring; index/data are there if you need them. */
 export type ExpandingTableType<T = Record<string, unknown>> = (

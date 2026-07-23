@@ -3,7 +3,7 @@ import { Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/auth/authContext";
-import ProductForm from "@/common/form/ProductForm";
+import ProductForm from "@/common/form/product_form/ProductForm";
 import Table from "@/components/cui/table";
 import { upsertById } from "@/lib/list";
 import {
@@ -112,6 +112,8 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         title: "Edit",
         Icon: Pencil,
         visible: "selected",
+        sheetResizable: true,
+        sheetWidth: { default: 720, min: 480, max: 1100 },
         Component: (ctx: ActionType<ProductRead>) => {
           const row = ctx.selectedRows[0];
           return (
@@ -163,6 +165,8 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
                 click: () => ({
                   title: "Create product",
                   Icon: Plus,
+                  sheetResizable: true,
+                  sheetWidth: { default: 720, min: 720, max: 1100 },
 
                   Component: (ctx: ActionType<ProductRead>) => {
                     return (

@@ -30,6 +30,7 @@ export interface ProductVariantBase {
   sku: string | null;
   attributes: Record<string, string> | null;
   image: MediaRead | null;
+  position: number;
 }
 
 export interface ProductVariantRead {
@@ -42,6 +43,7 @@ export interface ProductVariantRead {
   is_in_stock: boolean;
   attributes: Record<string, string> | null;
   image: MediaRead | null;
+  position: number;
   created_at: string;
   updated_at: string | null;
 }

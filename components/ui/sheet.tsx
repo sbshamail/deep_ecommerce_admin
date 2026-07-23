@@ -4,6 +4,7 @@ import * as React from "react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 import { X } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Resizable } from "re-resizable"
 import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
@@ -46,20 +47,100 @@ const sheetVariants = cva(
   },
 )
 
+// Position/border/animation only — no width — used for the resizable path,
+// where width is instead driven by the inner <Resizable> so the fixed
+// Content box can simply hug whatever width the drag handle sets.
+const sheetPositionVariants = cva(
+  [
+    "fixed z-50 flex flex-col gap-0 bg-background shadow-xl",
+    "transition ease-in-out",
+    "data-[state=closed]:duration-300 data-[state=open]:duration-500",
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+  ].join(" "),
+  {
+    variants: {
+      side: {
+        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        bottom: "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "inset-y-0 left-0 h-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+        right: "inset-y-0 right-0 h-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+      },
+    },
+    defaultVariants: { side: "right" },
+  },
+)
+
 interface SheetContentProps
   extends React.ComponentProps<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+    VariantProps<typeof sheetVariants> {
+  /** Lets the user drag an edge to resize (only meaningful for side="left"/"right"). */
+  resizable?: boolean
+  defaultWidth?: number
+  minWidth?: number
+  maxWidth?: number
+}
 
-function SheetContent({ side = "right", className, children, ...props }: SheetContentProps) {
+function SheetContent({
+  side = "right",
+  className,
+  children,
+  resizable,
+  defaultWidth = 384,
+  minWidth = 320,
+  maxWidth = 960,
+  ...props
+}: SheetContentProps) {
+  const [width, setWidth] = React.useState(defaultWidth)
+
+  if (!resizable || (side !== "left" && side !== "right")) {
+    return (
+      <SheetPortal>
+        <SheetOverlay />
+        <SheetPrimitive.Content
+          data-slot="sheet-content"
+          className={cn(sheetVariants({ side }), className)}
+          {...props}
+        >
+          {children}
+          <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </SheetClose>
+        </SheetPrimitive.Content>
+      </SheetPortal>
+    )
+  }
+
+  const resizeEdge = side === "right" ? "left" : "right"
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
-        className={cn(sheetVariants({ side }), className)}
+        className={cn(sheetPositionVariants({ side }), "max-w-[100vw]", className)}
         {...props}
       >
-        {children}
+        <Resizable
+          size={{ width, height: "100%" }}
+          minWidth={minWidth}
+          maxWidth={maxWidth}
+          enable={{ left: resizeEdge === "left", right: resizeEdge === "right" }}
+          onResize={(_e, _dir, _ref, delta) =>
+            setWidth((w) => Math.min(maxWidth, Math.max(minWidth, w + delta.width)))
+          }
+          handleClasses={{ [resizeEdge]: "hover:bg-primary/40 transition-colors" }}
+          handleStyles={{
+            [resizeEdge]: {
+              width: 6,
+              cursor: "col-resize",
+              [resizeEdge]: -3,
+            },
+          }}
+          className="flex h-full max-w-full flex-col"
+        >
+          {children}
+        </Resizable>
         <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
