@@ -194,6 +194,15 @@
     @apply font-sans;
   }
 
+  /* Browsers default <button> to cursor:default (unlike <a>) — this is the
+     shadcn init-time "cursor-pointer on buttons" fix, applied globally so
+     it covers every button (shared Button component, raw <button>,
+     role="button") without needing the class added by hand each time. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* Webkit scrollbar — global */
   *::-webkit-scrollbar {
     width: var(--scrollbar-size);

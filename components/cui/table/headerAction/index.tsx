@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -275,10 +276,12 @@ const TableHeaderAction = ({
       >
         <SheetContent
           side="right"
-          resizable={sheetContent.sheetResizable}
-          defaultWidth={sheetContent.sheetWidth?.default}
-          minWidth={sheetContent.sheetWidth?.min}
-          maxWidth={sheetContent.sheetWidth?.max}
+          resizable={sheetContent.resizable}
+          defaultWidth={sheetContent.width?.default}
+          minWidth={sheetContent.width?.min}
+          maxWidth={sheetContent.width?.max}
+          className={sheetContent.className}
+          resizableClassName={sheetContent.resizableClassName}
           onPointerDownOutside={ignoreOutsideWhilePending}
           onInteractOutside={ignoreOutsideWhilePending}
         >
@@ -297,15 +300,24 @@ const TableHeaderAction = ({
         onOpenChange={(next) => guardedOpenChange("dialog", next)}
       >
         <DialogContent
+          resizable={dialogContent.resizable}
+          defaultWidth={dialogContent.width?.default}
+          minWidth={dialogContent.width?.min}
+          maxWidth={dialogContent.width?.max}
+          defaultHeight={dialogContent.height?.default}
+          minHeight={dialogContent.height?.min}
+          maxHeight={dialogContent.height?.max}
+          className={dialogContent.className}
+          resizableClassName={dialogContent.resizableClassName}
           onPointerDownOutside={ignoreOutsideWhilePending}
           onInteractOutside={ignoreOutsideWhilePending}
         >
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
+          <DialogBody className="py-2">
             {renderComponent(dialogContent, () => toggleDialog(false))}
-          </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
 

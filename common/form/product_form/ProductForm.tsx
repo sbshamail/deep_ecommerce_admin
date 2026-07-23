@@ -118,16 +118,18 @@ const ProductForm = ({
     return <p className="text-sm text-muted-foreground">Loading…</p>;
 
   return (
-    <ProductFormBody
-      mode={mode}
-      productId={productId}
-      categories={categories}
-      defaultValues={initialValues}
-      initialThumbnailUrl={thumbnailUrl}
-      onSuccess={onSuccess}
-      close={close}
-      onDirtyChange={onDirtyChange}
-    />
+    <div className="">
+      <ProductFormBody
+        mode={mode}
+        productId={productId}
+        categories={categories}
+        defaultValues={initialValues}
+        initialThumbnailUrl={thumbnailUrl}
+        onSuccess={onSuccess}
+        close={close}
+        onDirtyChange={onDirtyChange}
+      />
+    </div>
   );
 };
 

@@ -1,8 +1,4 @@
-import {
-  ActionMenuList,
-  ActionStateTypes,
-  SheetWidthConfig,
-} from "@/types/table_types";
+import { ActionMenuList, ActionStateTypes } from "@/types/table_types";
 import { Dispatch, JSX, SetStateAction } from "react";
 
 export const filterActionMenuCondition = (
@@ -29,23 +25,27 @@ export const filterActionMenuCondition = (
   }
 };
 
+/**
+ * Takes the whole ActionMenuList item rather than picking out individual
+ * fields — any new field added to ActionMenuList/ActionStateTypes (sizing,
+ * classNames, etc.) flows through here automatically, no signature change.
+ */
 export const handleActionMenu = (
   toggle: () => void,
   setContent: Dispatch<SetStateAction<ActionStateTypes>>,
-  Component: JSX.Element,
-  title: string,
-  multiSelected?: boolean,
-  sheetResizable?: boolean,
-  sheetWidth?: SheetWidthConfig,
+  item: ActionMenuList,
 ) => {
   toggle();
   setContent((prev) => ({
     ...prev,
-    Component,
-    title,
-    multiSelected,
-    sheetResizable,
-    sheetWidth,
+    Component: item.Component as JSX.Element,
+    title: item.title,
+    multiSelected: item.multiSelected,
+    resizable: item.resizable,
+    width: item.width,
+    height: item.height,
+    className: item.className,
+    resizableClassName: item.resizableClassName,
   }));
 };
 
@@ -65,26 +65,10 @@ export const openComponentAction = (
 ) => {
   // if item.modal is set, open into a Dialog
   if (item.modal && toggleModal && setModalContent) {
-    handleActionMenu(
-      toggleModal,
-      setModalContent,
-      item.Component as JSX.Element,
-      item.title,
-      item.multiSelected,
-      item.sheetResizable,
-      item.sheetWidth,
-    );
+    handleActionMenu(toggleModal, setModalContent, item);
     // otherwise, open into a Sheet/Drawer
   } else {
-    handleActionMenu(
-      toggleDrawer,
-      setDrawerContent,
-      item.Component as JSX.Element,
-      item.title,
-      item.multiSelected,
-      item.sheetResizable,
-      item.sheetWidth,
-    );
+    handleActionMenu(toggleDrawer, setDrawerContent, item);
   }
 };
 

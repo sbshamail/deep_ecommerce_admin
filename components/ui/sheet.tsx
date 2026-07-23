@@ -5,6 +5,7 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 import { X } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Resizable } from "re-resizable"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
@@ -73,11 +74,17 @@ const sheetPositionVariants = cva(
 interface SheetContentProps
   extends React.ComponentProps<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
-  /** Lets the user drag an edge to resize (only meaningful for side="left"/"right"). */
+  /** Lets the user drag an edge to resize (only meaningful for side="left"/"right").
+   * Automatically falls back to the plain responsive layout below the
+   * mobile breakpoint — a fixed-pixel resizable width makes no sense on a
+   * phone-width screen, so it isn't attempted there. */
   resizable?: boolean
   defaultWidth?: number
   minWidth?: number
   maxWidth?: number
+  /** Extra classes for the inner resizable box (padding/gap/etc.) — kept
+   * separate from `className`, which stays on the outer positioned box. */
+  resizableClassName?: string
 }
 
 function SheetContent({
@@ -88,11 +95,13 @@ function SheetContent({
   defaultWidth = 384,
   minWidth = 320,
   maxWidth = 960,
+  resizableClassName,
   ...props
 }: SheetContentProps) {
+  const isMobile = useIsMobile()
   const [width, setWidth] = React.useState(defaultWidth)
 
-  if (!resizable || (side !== "left" && side !== "right")) {
+  if (!resizable || isMobile || (side !== "left" && side !== "right")) {
     return (
       <SheetPortal>
         <SheetOverlay />
@@ -118,7 +127,11 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
-        className={cn(sheetPositionVariants({ side }), "max-w-[100vw]", className)}
+        className={cn(
+          sheetPositionVariants({ side }),
+          "max-w-[100vw] overflow-hidden",
+          className,
+        )}
         {...props}
       >
         <Resizable
@@ -137,7 +150,7 @@ function SheetContent({
               [resizeEdge]: -3,
             },
           }}
-          className="flex h-full max-w-full flex-col"
+          className={cn("flex h-full max-w-full flex-col", resizableClassName)}
         >
           {children}
         </Resizable>

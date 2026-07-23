@@ -112,8 +112,8 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         title: "Edit",
         Icon: Pencil,
         visible: "selected",
-        sheetResizable: true,
-        sheetWidth: { default: 720, min: 480, max: 1100 },
+        resizable: true,
+        width: { default: 720, min: 480, max: 1100 },
         Component: (ctx: ActionType<ProductRead>) => {
           const row = ctx.selectedRows[0];
           return (
@@ -165,8 +165,8 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
                 click: () => ({
                   title: "Create product",
                   Icon: Plus,
-                  sheetResizable: true,
-                  sheetWidth: { default: 720, min: 720, max: 1100 },
+                  resizable: true,
+                  width: { default: 720, min: 720, max: 1100 },
 
                   Component: (ctx: ActionType<ProductRead>) => {
                     return (

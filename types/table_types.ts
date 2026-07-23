@@ -15,7 +15,7 @@ export interface ActionType<T = Record<string, unknown>> {
   onDirtyChange?: (dirty: boolean) => void;
 }
 
-export interface SheetWidthConfig {
+export interface ResizableSizeConfig {
   default: number;
   min: number;
   max: number;
@@ -31,9 +31,17 @@ export interface ActionMenuList<T = Record<string, unknown>> {
   Component?: ((ctx: ActionType<T>) => JSX.Element) | JSX.Element;
   /** Open Component in a centered Dialog instead of a side Sheet */
   modal?: boolean;
-  /** Opens the side Sheet wide and lets the user drag its edge to resize. */
-  sheetResizable?: boolean;
-  sheetWidth?: SheetWidthConfig;
+  /** Lets the user drag an edge to resize — the Sheet's edge, or the
+   * Dialog's edges/corner when `modal` is set. */
+  resizable?: boolean;
+  width?: ResizableSizeConfig;
+  /** Dialog only (a Sheet is always full height) — ignored for Sheets. */
+  height?: ResizableSizeConfig;
+  /** Extra classes for the outer Sheet/Dialog box. */
+  className?: ClassNameType;
+  /** Extra classes for the inner resizable box (padding/gap/etc.) — only
+   * meaningful when `resizable` is set. */
+  resizableClassName?: string;
 }
 
 export interface RenderType<T = Record<string, unknown>> {
@@ -70,8 +78,11 @@ export interface ActionStateTypes<T = Record<string, unknown>> {
   Component: ((props: ActionType<T>) => JSX.Element) | JSX.Element;
   multiSelected?: boolean;
   title: string;
-  sheetResizable?: boolean;
-  sheetWidth?: SheetWidthConfig;
+  resizable?: boolean;
+  width?: ResizableSizeConfig;
+  height?: ResizableSizeConfig;
+  className?: string;
+  resizableClassName?: string;
 }
 /** row first so `(row) => <Foo .../>` works without destructuring; index/data are there if you need them. */
 export type ExpandingTableType<T = Record<string, unknown>> = (
