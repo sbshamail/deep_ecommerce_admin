@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import Table from "@/components/cui/table";
 import { ProductVariantBase } from "@/types/product_types";
 import { ColumnType } from "@/types/table_types";
@@ -16,18 +14,23 @@ interface ProductVariantTableProps {
 // — it doesn't carry product_id/created_at/updated_at, only ProductSingleRead
 // (single product read/update) does. This table only renders pricing/stock
 // fields, all present on the base shape, so it takes that directly.
-const ProductVariantTable = ({
-  data,
-  onSelectionChange,
-}: ProductVariantTableProps) => {
-  const [selectedRows, setSelectedRows] = useState<ProductVariantBase[]>([]);
-
-  const handleSelectionChange = (rows: ProductVariantBase[]) => {
-    setSelectedRows(rows);
-    onSelectionChange?.(rows);
-  };
-
+const ProductVariantTable = ({ data }: ProductVariantTableProps) => {
   const columns: ColumnType<ProductVariantBase>[] = [
+    {
+      title: "image",
+      accessor: "image.original",
+      render: ({ cell }) =>
+        cell ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cell as string}
+            alt=""
+            className="h-8 w-8 rounded object-cover"
+          />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
     {
       title: "price",
       accessor: "price",
