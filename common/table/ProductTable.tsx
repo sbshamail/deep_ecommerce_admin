@@ -1,17 +1,17 @@
 "use client";
-import { Pencil, Plus } from "lucide-react";
+import { Eye, Pencil, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 
-import { useAuth } from "@/auth/authContext";
 import ProductForm from "@/common/form/product_form/ProductForm";
 import Table from "@/components/cui/table";
 import { upsertById } from "@/lib/list";
+import { useAuth } from "@/providers/auth/authContext";
 import {
   CategoryTreeNode,
   ProductRead,
   ProductSingleRead,
 } from "@/types/product_types";
-import { ActionMenuList, ActionType, ColumnType } from "@/types/table_types";
+import { ActionType, ColumnType, NewActionMenu } from "@/types/table_types";
 import ProductVariantTable from "./ProductVariantTable";
 
 interface ProductTableProps {
@@ -67,6 +67,17 @@ const columns: ColumnType<ProductRead>[] = [
     render: ({ cell }) => (cell ? "Yes" : "No"),
   },
   { title: "Created", accessor: "created_at", type: "date" },
+  {
+    title: "Actions",
+    headerClassName: "sticky right-0 bg-muted",
+    className: "sticky right-0 bg-muted ",
+    render: ({ row }) => (
+      <div className="flex gap-1 items-center justify-center w-full">
+        <Eye size={15} />
+        <Trash size={15} />
+      </div>
+    ),
+  },
 ];
 
 // ProductSingleRead.variants carries a wider shape than the list row's
@@ -101,19 +112,22 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
     "product:update",
   );
 
-  const actionMenuList = ({
+  // Top toolbar buttons (not a dropdown) — Edit always shows but is
+  // disabled unless the user can update AND exactly one row is selected
+  // (there's no other row to edit against). Create shows whenever the
+  // user has permission.
+  const newActionMenu = ({
     rows,
   }: {
     rows: ProductRead[];
-  }): ActionMenuList<ProductRead>[] => {
-    if (!canUpdate) return [];
-    return [
-      {
+  }): NewActionMenu<ProductRead>[] => [
+    {
+      click: () => ({
         title: "Edit",
         Icon: Pencil,
-        visible: "selected",
         resizable: true,
         width: { default: 720, min: 480, max: 1100 },
+        disabled: !canUpdate || rows.length !== 1,
         Component: (ctx: ActionType<ProductRead>) => {
           const row = ctx.selectedRows[0];
           return (
@@ -129,9 +143,32 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
             />
           );
         },
-      },
-    ];
-  };
+      }),
+    },
+    {
+      click: () => ({
+        title: "Create product",
+        Icon: Plus,
+        className: canCreate ? "" : "hidden",
+        resizable: true,
+        width: { default: 720, min: 480, max: 1100 },
+        Component: (ctx: ActionType<ProductRead>) => {
+          return (
+            <ProductForm
+              mode="create"
+              categories={categories}
+              onSuccess={(created) => {
+                setRows((prev) => upsertById(prev, toProductRow(created)));
+                setRowTotal((prev) => prev + 1);
+              }}
+              close={ctx.close}
+              onDirtyChange={ctx.onDirtyChange}
+            />
+          );
+        },
+      }),
+    },
+  ];
 
   return (
     <Table<ProductRead>
@@ -143,7 +180,6 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       showColumnFilter
       selectedRows={selectedRows}
       setSelectedRows={setSelectedRows}
-      actionMenuList={canUpdate ? actionMenuList : undefined}
       expandable={true}
       ExpandingContent={(row: ProductRead) => (
         <ProductVariantTable
@@ -158,37 +194,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
           }}
         />
       )}
-      newActionMenu={
-        canCreate
-          ? () => [
-              {
-                click: () => ({
-                  title: "Create product",
-                  Icon: Plus,
-                  resizable: true,
-                  width: { default: 720, min: 720, max: 1100 },
-
-                  Component: (ctx: ActionType<ProductRead>) => {
-                    return (
-                      <ProductForm
-                        mode="create"
-                        categories={categories}
-                        onSuccess={(created) => {
-                          setRows((prev) =>
-                            upsertById(prev, toProductRow(created)),
-                          );
-                          setRowTotal((prev) => prev + 1);
-                        }}
-                        close={ctx.close}
-                        onDirtyChange={ctx.onDirtyChange}
-                      />
-                    );
-                  },
-                }),
-              },
-            ]
-          : undefined
-      }
+      newActionMenu={newActionMenu}
       tableWrapperClass="max-h-[calc(100svh-330px)] overflow-auto"
     >
       <Table.Header className="min-w-0 border-b border-border p-2 font-semibold">

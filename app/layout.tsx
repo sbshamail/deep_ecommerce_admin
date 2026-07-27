@@ -1,9 +1,10 @@
-import AuthProvider from "@/auth/authContext";
-import { getCurrentUser } from "@/auth/session";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { parseThemeCookie, THEME_COOKIE } from "@/theme/config";
-import ThemeProvider from "@/theme/themeContext";
+import AuthProvider from "@/providers/auth/authContext";
+import { getCurrentUser } from "@/providers/auth/session";
+import LoaderProvider from "@/providers/LoaderContext";
+import { parseThemeCookie, THEME_COOKIE } from "@/providers/theme/config";
+import ThemeProvider from "@/providers/theme/themeContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
@@ -42,14 +43,16 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full overflow-hidden">
-        <ThemeProvider initial={theme}>
-          <AuthProvider initialUser={user}>
-            <TooltipProvider>
-              {children}
-              {modal}
-            </TooltipProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <LoaderProvider>
+          <ThemeProvider initial={theme}>
+            <AuthProvider initialUser={user}>
+              <TooltipProvider>
+                {children}
+                {modal}
+              </TooltipProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </LoaderProvider>
       </body>
     </html>
   );

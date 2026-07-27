@@ -3,7 +3,6 @@ import { ChevronRight, FolderTree, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-import { useAuth } from "@/auth/authContext";
 import CategoryForm from "@/common/form/CategoryForm";
 import { LucideIcon } from "@/components/cui/Icon";
 import {
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { removeTreeNode, upsertTreeNode } from "@/lib/list";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/auth/authContext";
 import { CategoryRead, CategoryTreeNode } from "@/types/product_types";
 
 // Backend caps the tree at 3 levels (fn.py calculate_category_level); a

@@ -26,6 +26,10 @@ export interface ActionMenuList<T = Record<string, unknown>> {
   Icon?: React.ElementType;
   visible?: "selected" | "unselected";
   multiSelected?: boolean;
+  /** Renders the trigger button grayed out and unclickable — for a
+   * NewActionMenu.click item, since visible/unselected only apply to the
+   * dropdown-based actionMenuList. */
+  disabled?: boolean;
   action?: (ctx: ActionType<T>) => void;
   deleted?: (ctx: ActionType<T>) => void;
   Component?: ((ctx: ActionType<T>) => JSX.Element) | JSX.Element;
@@ -50,15 +54,29 @@ export interface RenderType<T = Record<string, unknown>> {
   data: T[];
   cell: string | number | Record<string, unknown> | null;
 }
+export interface RenderTitleType<T = Record<string, unknown>> {
+  column: ColumnType<T>;
+  index: number;
+}
 export interface ColumnType<T = Record<string, unknown>> {
-  title: string;
+  /** Plain-text label — also used as the CSV export header and the
+   * column-visibility filter's label, so keep it a real string even when
+   * `renderTitle` overrides what's actually shown in the <th>. */
+  title?: string;
   accessor?: string;
   filterId?: string;
   type?: "date" | "currency";
   currency?: "PKR" | "SAR" | "EUR" | "JPY" | "USD" | "INR";
   format?: "en-PK" | "en-US" | "de-DE" | "ja-JP" | "en-IN";
   render?: ({ row, index, data, cell }: RenderType<T>) => React.ReactNode;
+  /** Body <td> className. */
   className?: React.ComponentProps<"div">["className"];
+  /** Fully customize the header <th> content — receives the column config
+   * itself, so it can still read `title` or anything else on the column.
+   * Falls back to plain `title` when omitted. */
+  renderTitle?: (ctx: RenderTitleType<T>) => React.ReactNode;
+  /** Header <th> className — kept separate from `className` (body cells). */
+  headerClassName?: React.ComponentProps<"th">["className"];
 }
 export type ColumnKey = "title" | "accessor" | "filterId";
 export interface ColumnFilterType {

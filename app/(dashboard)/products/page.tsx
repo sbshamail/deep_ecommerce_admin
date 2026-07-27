@@ -1,6 +1,6 @@
-import { getAccessToken } from "@/auth/session";
 import ProductTable from "@/common/table/ProductTable";
 import { ApiError, authorizedFetchList, backendFetch } from "@/lib/api/server";
+import { getAccessToken } from "@/providers/auth/session";
 import { CategoryTreeNode, ProductRead } from "@/types/product_types";
 
 const page = async () => {

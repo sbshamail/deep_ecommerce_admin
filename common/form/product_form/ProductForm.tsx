@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 import { CategoryTreeNode, ProductSingleRead } from "@/types/product_types";
-
 import {
   ProductFormValues,
   ProductVariantFormValue,
 } from "../schemas/productSchemas";
 
+import { fetching } from "@/lib/api/client";
 import { ProductFormBody } from "./ProductFormBody";
 
 interface ProductFormProps {
@@ -95,18 +95,19 @@ const ProductForm = ({
     if (mode !== "update" || !productId) return;
 
     let cancelled = false;
-    fetch(`/api/product/read/${productId}`)
-      .then((res) => res.json())
-      .then((payload: { data?: ProductSingleRead; detail?: string }) => {
-        if (cancelled) return;
-        if (!payload.data) {
-          setLoadError(payload.detail ?? "Failed to load product");
-          return;
-        }
-        setInitialValues(toDefaultValues(payload.data));
-        setThumbnailUrl(payload.data.thumbnail?.original ?? null);
-      })
-      .catch(() => !cancelled && setLoadError("Failed to load product"));
+    fetching<ProductSingleRead>({
+      method: "GET",
+      url: `/api/product/read/${productId}`,
+      badgeLoading: "Loading product",
+    }).then((payload: { data?: ProductSingleRead; detail?: string }) => {
+      if (cancelled) return;
+      if (!payload.data) {
+        setLoadError(payload.detail ?? "Failed to load product");
+        return;
+      }
+      setInitialValues(toDefaultValues(payload.data));
+      setThumbnailUrl(payload.data.thumbnail?.original ?? null);
+    });
 
     return () => {
       cancelled = true;
@@ -114,8 +115,10 @@ const ProductForm = ({
   }, [mode, productId]);
 
   if (loadError) return <p className="text-sm text-destructive">{loadError}</p>;
-  if (!initialValues)
+
+  if (!initialValues) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
 
   return (
     <div className="">

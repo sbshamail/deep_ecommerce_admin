@@ -4,7 +4,7 @@ import {
   GUEST_ONLY_PATHS,
   matchesPath,
   PUBLIC_PATHS,
-} from "@/auth/config";
+} from "@/providers/auth/config";
 import { jwtDecode } from "jwt-decode";
 import { NextRequest, NextResponse } from "next/server";
 

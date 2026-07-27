@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { ApiError, backendFetch } from "@/lib/api/server";
 import {
   ACCESS_TOKEN_COOKIE,
   DEFAULT_TOKEN_MAX_AGE,
   REFRESH_TOKEN_COOKIE,
-} from "@/auth/config";
-import { decodeJwtExpiry } from "@/auth/session";
-import { ApiError, backendFetch } from "@/lib/api/server";
+} from "@/providers/auth/config";
+import { decodeJwtExpiry } from "@/providers/auth/session";
 import { LoginResponseData, SigninPayload } from "@/types/auth_types";
 
 export async function POST(request: Request) {

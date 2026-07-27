@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import useDivDimensions from "@/hooks/useDivDimensions";
+import { cn } from "@/lib/utils";
 import { ClassNameType } from "@/types/common_types";
 import {
   ColumnType,
@@ -104,12 +105,17 @@ const TableMainBody = ({
             return (
               <th
                 key={index}
-                className={twMerge(
+                className={cn(
                   `   px-5 ${tableInsideClass} whitespace-nowrap`,
                   `  ${thHeadClass}`,
+                  item?.headerClassName,
                 )}
               >
-                <span className="font-bold">{item?.title}</span>
+                {item?.renderTitle ? (
+                  item.renderTitle({ column: item, index })
+                ) : (
+                  <span className="font-bold ">{item?.title}</span>
+                )}
               </th>
             );
           })}
@@ -170,7 +176,7 @@ const TableMainBody = ({
                 columns?.map((column, idx) => (
                   <td
                     key={idx}
-                    className={twMerge(
+                    className={cn(
                       `relative p-0 m-0 px-5 overflow-hidden ${tableInsideClass}  whitespace-nowrap`,
                       ` ${tdBodyClass} ${column?.className} `,
                     )}

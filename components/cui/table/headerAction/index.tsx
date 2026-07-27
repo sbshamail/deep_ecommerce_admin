@@ -29,6 +29,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import { ClassNameType } from "@/types/common_types";
 import {
   ActionMenuList,
@@ -227,7 +228,8 @@ const TableHeaderAction = ({
       <Button
         key={index}
         size="sm"
-        className="h-7 gap-1 text-xs"
+        className={cn("h-7 gap-1 text-xs", item?.className)}
+        disabled={item?.disabled}
         onClick={() =>
           openComponentAction(
             item,

@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { getAccessToken } from "@/auth/session";
 import { BACKEND_API_URL, backendEnvelope } from "@/lib/api/server";
+import { getAccessToken } from "@/providers/auth/session";
 
 /**
  * Generic pass-through proxy: /api/<slug> → FastAPI's /<slug>, same method,
