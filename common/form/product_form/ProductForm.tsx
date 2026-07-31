@@ -40,6 +40,7 @@ const emptyValues: ProductFormValues = {
   is_featured: false,
   tags: "",
   variants: [emptyVariant],
+  images: [],
   meta_title: "",
   meta_description: "",
 };
@@ -70,6 +71,11 @@ const toDefaultValues = (product: ProductSingleRead): ProductFormValues => ({
           imageUrl: v.image?.original ?? null,
         }))
       : [emptyVariant],
+  images: (product.images ?? []).map((media) => ({
+    filename: media.filename,
+    url: media.original,
+    file: null,
+  })),
   meta_title: product.meta_title ?? "",
   meta_description: product.meta_description ?? "",
 });

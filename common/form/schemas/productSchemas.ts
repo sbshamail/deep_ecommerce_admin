@@ -32,6 +32,19 @@ export const productVariantSchema = z.object({
   imageUrl: z.string().nullable().optional(),
 });
 
+export const MAX_PRODUCT_IMAGES = 4;
+
+// One image slot — either an existing server-side image (filename/url set,
+// file null) or a newly-picked file not uploaded yet (file set, filename
+// null). id is a client-only key so SortableList/useFieldArray can reorder
+// without it (RHF's own field.id already does that, this is just for
+// building the delete_images list on submit).
+export const productImageSchema = z.object({
+  filename: z.string().nullable(),
+  url: z.string().nullable(),
+  file: z.instanceof(File).nullable(),
+});
+
 export const productSchema = z.object({
   name: z.string().min(2, "Name is required"),
   description: z.string().optional(),
@@ -40,9 +53,13 @@ export const productSchema = z.object({
   is_featured: z.boolean(),
   tags: z.string().optional(),
   variants: z.array(productVariantSchema).min(1, "Add at least one variant"),
+  images: z
+    .array(productImageSchema)
+    .max(MAX_PRODUCT_IMAGES, `Up to ${MAX_PRODUCT_IMAGES} images allowed`),
   meta_title: z.string().optional(),
   meta_description: z.string().optional(),
 });
 
 export type ProductVariantFormValue = z.infer<typeof productVariantSchema>;
+export type ProductImageFormValue = z.infer<typeof productImageSchema>;
 export type ProductFormValues = z.infer<typeof productSchema>;

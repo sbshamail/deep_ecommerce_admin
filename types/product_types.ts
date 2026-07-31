@@ -54,6 +54,7 @@ export interface ProductRead {
   slug: string;
   description: string | null;
   thumbnail: MediaRead | null;
+  images: MediaRead[] | null;
   attributes: ProductAttribute[] | null;
   tags: string[] | null;
   meta_title: string | null;

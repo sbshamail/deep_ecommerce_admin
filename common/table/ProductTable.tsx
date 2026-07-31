@@ -1,10 +1,10 @@
 "use client";
-import { Eye, Pencil, Plus, Trash } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 
 import ProductForm from "@/common/form/product_form/ProductForm";
 import Table from "@/components/cui/table";
-import { upsertById } from "@/lib/list";
+import { removeById, upsertById } from "@/lib/list";
 import { useAuth } from "@/providers/auth/authContext";
 import {
   CategoryTreeNode,
@@ -12,6 +12,7 @@ import {
   ProductSingleRead,
 } from "@/types/product_types";
 import { ActionType, ColumnType, NewActionMenu } from "@/types/table_types";
+import ProductRowActions from "./ProductRowActions";
 import ProductVariantTable from "./ProductVariantTable";
 
 interface ProductTableProps {
@@ -19,66 +20,6 @@ interface ProductTableProps {
   total: number;
   categories: CategoryTreeNode[];
 }
-
-const columns: ColumnType<ProductRead>[] = [
-  {
-    title: "Thumbnail",
-    accessor: "thumbnail.original",
-    render: ({ cell }) =>
-      cell ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={cell as string}
-          alt=""
-          className="h-8 w-8 rounded object-cover"
-        />
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
-  },
-  { title: "Name", accessor: "name", filterId: "name" },
-  { title: "Category", accessor: "category.name", filterId: "category.name" },
-  {
-    title: "Price Range Min-Max",
-    render: ({ row }) => (
-      <span>
-        {row?.min_price}-{row?.max_price}
-      </span>
-    ),
-    filterId: "min_price",
-  },
-  {
-    title: "Stock",
-    accessor: "total_stock",
-    filterId: "total_stock",
-  },
-  {
-    title: "Status",
-    accessor: "is_active",
-    render: ({ cell }) => (
-      <span className={cell ? "text-green-600" : "text-muted-foreground"}>
-        {cell ? "Active" : "Inactive"}
-      </span>
-    ),
-  },
-  {
-    title: "Featured",
-    accessor: "is_featured",
-    render: ({ cell }) => (cell ? "Yes" : "No"),
-  },
-  { title: "Created", accessor: "created_at", type: "date" },
-  {
-    title: "Actions",
-    headerClassName: "sticky right-0 bg-muted",
-    className: "sticky right-0 bg-muted ",
-    render: ({ row }) => (
-      <div className="flex gap-1 items-center justify-center w-full">
-        <Eye size={15} />
-        <Trash size={15} />
-      </div>
-    ),
-  },
-];
 
 // ProductSingleRead.variants carries a wider shape than the list row's
 // ProductVariantBase (price nullable, extra fields) — normalize so a
@@ -104,6 +45,74 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
     setRowTotal(total);
   }
   const [selectedRows, setSelectedRows] = useState<ProductRead[]>([]);
+
+  const columns: ColumnType<ProductRead>[] = [
+    {
+      title: "Thumbnail",
+      accessor: "thumbnail.original",
+      render: ({ cell }) =>
+        cell ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cell as string}
+            alt=""
+            className="h-8 w-8 rounded object-cover"
+          />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    { title: "Name", accessor: "name", filterId: "name" },
+    {
+      title: "Category",
+      accessor: "category.name",
+      filterId: "category.name",
+    },
+    {
+      title: "Price Range Min-Max",
+      render: ({ row }) => (
+        <span>
+          {row?.min_price}-{row?.max_price}
+        </span>
+      ),
+      filterId: "min_price",
+    },
+    {
+      title: "Stock",
+      accessor: "total_stock",
+      filterId: "total_stock",
+    },
+    {
+      title: "Status",
+      accessor: "is_active",
+      render: ({ cell }) => (
+        <span className={cell ? "text-green-600" : "text-muted-foreground"}>
+          {cell ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      title: "Featured",
+      accessor: "is_featured",
+      render: ({ cell }) => (cell ? "Yes" : "No"),
+    },
+    { title: "Created", accessor: "created_at", type: "date" },
+    {
+      title: "Actions",
+      headerClassName: "sticky right-0 bg-muted",
+      className: "sticky right-0 bg-muted",
+      render: ({ row }) =>
+        row && (
+          <ProductRowActions
+            product={row}
+            onDeleted={(id) => {
+              setRows((prev) => removeById(prev, id));
+              setRowTotal((prev) => Math.max(0, prev - 1));
+            }}
+          />
+        ),
+    },
+  ];
 
   const canCreate = canInShop(user?.default_shop_id, "product:create");
   const canUpdate = canInShop(
@@ -192,6 +201,19 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
               setSelectedRows((prev) => prev.filter((r) => r.id !== row.id));
             }
           }}
+          onVariantDeleted={(variantId) =>
+            setRows((prev) =>
+              prev.map((p) =>
+                p.id === row.id
+                  ? {
+                      ...p,
+                      variants:
+                        p.variants?.filter((v) => v.id !== variantId) ?? null,
+                    }
+                  : p,
+              ),
+            )
+          }
         />
       )}
       newActionMenu={newActionMenu}

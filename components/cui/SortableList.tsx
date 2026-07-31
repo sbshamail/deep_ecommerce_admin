@@ -13,6 +13,7 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
+  type SortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
@@ -55,6 +56,9 @@ interface SortableListProps<T extends { id: string | number }> {
     dragHandleProps: DragHandleProps,
   ) => React.ReactNode;
   className?: string;
+  /** dnd-kit's sorting strategy — defaults to vertical-list (stacked rows).
+   * Pass `rectSortingStrategy` for a wrapping grid/box layout instead. */
+  strategy?: SortingStrategy;
 }
 
 /**
@@ -68,6 +72,7 @@ const SortableList = <T extends { id: string | number }>({
   onReorder,
   renderItem,
   className,
+  strategy = verticalListSortingStrategy,
 }: SortableListProps<T>) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -93,10 +98,7 @@ const SortableList = <T extends { id: string | number }>({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext
-        items={items.map((item) => item.id)}
-        strategy={verticalListSortingStrategy}
-      >
+      <SortableContext items={items.map((item) => item.id)} strategy={strategy}>
         <div className={className}>
           {items.map((item, index) => (
             <SortableItem key={item.id} id={item.id}>

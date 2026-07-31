@@ -14,8 +14,13 @@ import { CategoryTreeNode, ProductSingleRead } from "@/types/product_types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import ImagesField from "@/components/cui/ImagesField";
 import CategoryPicker from "../CategoryPicker";
-import { ProductFormValues, productSchema } from "../schemas/productSchemas";
+import {
+  MAX_PRODUCT_IMAGES,
+  ProductFormValues,
+  productSchema,
+} from "../schemas/productSchemas";
 import { emptyVariant } from "./ProductForm";
 import VariantRow from "./VariantRow";
 interface ProductFormBodyProps {
@@ -101,6 +106,22 @@ export const ProductFormBody = ({
 
     if (thumbnailFile) formData.set("thumbnail", thumbnailFile);
 
+    // New files go under "images"; anything that was there originally but
+    // isn't in the current list anymore (removed via the X button) goes
+    // under "delete_images" as its filename — the backend expects repeated
+    // form fields for a List[str], not a JSON string.
+    values.images.forEach((image) => {
+      if (image.file) formData.append("images", image.file);
+    });
+    const keptFilenames = new Set(
+      values.images.map((image) => image.filename).filter(Boolean),
+    );
+    defaultValues.images.forEach((image) => {
+      if (image.filename && !keptFilenames.has(image.filename)) {
+        formData.append("delete_images", image.filename);
+      }
+    });
+
     const url =
       mode === "create"
         ? "/api/product/create"
@@ -143,6 +164,8 @@ export const ProductFormBody = ({
             />
           </div>
         </div>
+
+        <ImagesField form={form} name="images" maxImages={MAX_PRODUCT_IMAGES} />
 
         <FormField
           control={form.control}

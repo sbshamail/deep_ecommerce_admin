@@ -25,7 +25,7 @@ export const handleArrangeCsvData = async (
   const formattedData = rows.map<ExportCsvRow>((row, index) => {
     return columns.reduce<ExportCsvRow>((acc, column) => {
       const accessor = column.accessor;
-      if (!accessor) return acc; // Skip if no accessor
+      if (!accessor || !column.title) return acc; // Skip if no accessor or title
 
       // Extract raw value
       const rawValue = accessor.split(".").reduce<unknown>((r, key) => {
