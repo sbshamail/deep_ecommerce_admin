@@ -34,11 +34,12 @@ const toDefaultValues = (variant?: ProductVariantBase): VariantFormValues => ({
   price: variant ? String(variant.price ?? 0) : "0",
   discount_price:
     variant?.discount_price != null ? String(variant.discount_price) : "",
-  stock: variant ? String(variant.stock ?? 0) : "0",
+  stock: variant ? String(variant.stock ?? 0) : "1",
   sku: variant?.sku ?? "",
-  attributes: Object.entries(variant?.attributes ?? {}).map(
-    ([key, value]) => ({ key, value }),
-  ),
+  attributes: Object.entries(variant?.attributes ?? {}).map(([key, value]) => ({
+    key,
+    value,
+  })),
   imageFile: null,
   imageUrl: variant?.image?.original ?? null,
 });
@@ -71,7 +72,9 @@ const VariantForm = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
-    setPreviewUrl(file ? URL.createObjectURL(file) : (variant?.image?.original ?? null));
+    setPreviewUrl(
+      file ? URL.createObjectURL(file) : (variant?.image?.original ?? null),
+    );
   };
 
   const onSubmit = async (values: VariantFormValues) => {
@@ -145,7 +148,7 @@ const VariantForm = ({
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" min={0} {...field} />
+                  <Input type="number" step="1" min={0} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -160,7 +163,7 @@ const VariantForm = ({
                 <FormControl>
                   <Input
                     type="number"
-                    step="0.01"
+                    step="1"
                     min={0}
                     placeholder="Optional"
                     {...field}

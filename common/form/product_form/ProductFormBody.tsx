@@ -1,3 +1,4 @@
+import ImagesField from "@/components/cui/ImagesField";
 import SortableList from "@/components/cui/SortableList";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +15,6 @@ import { CategoryTreeNode, ProductSingleRead } from "@/types/product_types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import ImagesField from "@/components/cui/ImagesField";
 import CategoryPicker from "../CategoryPicker";
 import {
   MAX_PRODUCT_IMAGES,
@@ -54,10 +54,13 @@ export const ProductFormBody = ({
     resolver: zodResolver(productSchema),
     defaultValues,
   });
+
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "variants",
   });
+
+  const watch = form.watch;
 
   const isDirty = form.formState.isDirty || Boolean(thumbnailFile);
   useEffect(() => {
@@ -121,24 +124,25 @@ export const ProductFormBody = ({
         formData.append("delete_images", image.filename);
       }
     });
+    console.log(values.images);
 
-    const url =
-      mode === "create"
-        ? "/api/product/create"
-        : `/api/product/update/${productId}`;
-    const res = await fetch(url, { method: "POST", body: formData });
-    const payload = (await res.json().catch(() => null)) as {
-      data?: ProductSingleRead;
-      detail?: string;
-    } | null;
+    // const url =
+    //   mode === "create"
+    //     ? "/api/product/create"
+    //     : `/api/product/update/${productId}`;
+    // const res = await fetch(url, { method: "POST", body: formData });
+    // const payload = (await res.json().catch(() => null)) as {
+    //   data?: ProductSingleRead;
+    //   detail?: string;
+    // } | null;
 
-    if (!res.ok || !payload?.data) {
-      setServerError(payload?.detail ?? "Something went wrong");
-      return;
-    }
+    // if (!res.ok || !payload?.data) {
+    //   setServerError(payload?.detail ?? "Something went wrong");
+    //   return;
+    // }
 
-    onSuccess?.(payload.data);
-    close?.();
+    // onSuccess?.(payload.data);
+    // close?.();
   };
 
   return (

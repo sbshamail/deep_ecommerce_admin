@@ -1,4 +1,4 @@
-import ProductTable from "@/common/table/ProductTable";
+import ProductTable from "@/common/table/productTable/ProductTable";
 import { ApiError, authorizedFetchList, backendFetch } from "@/lib/api/server";
 import { getAccessToken } from "@/providers/auth/session";
 import { CategoryTreeNode, ProductRead } from "@/types/product_types";

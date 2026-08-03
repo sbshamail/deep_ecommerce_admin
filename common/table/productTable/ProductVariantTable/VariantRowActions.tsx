@@ -1,12 +1,14 @@
 "use client";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Modal } from "@/components/ui/modal";
 import { SheetPanel } from "@/components/ui/sheet-panel";
 import { ProductVariantBase } from "@/types/product_types";
 
 import VariantForm from "./VariantForm";
+import VariantViewDetails from "./VariantViewDetails";
 
 interface VariantRowActionsProps {
   productId: number;
@@ -21,6 +23,7 @@ const VariantRowActions = ({
   onSaved,
   onDeleted,
 }: VariantRowActionsProps) => {
+  const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -46,6 +49,14 @@ const VariantRowActions = ({
     <div className="flex items-center justify-center gap-3">
       <button
         type="button"
+        title="View variant"
+        onClick={() => setViewOpen(true)}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <Eye size={14} />
+      </button>
+      <button
+        type="button"
         title="Edit variant"
         onClick={() => setEditOpen(true)}
         className="text-muted-foreground hover:text-foreground"
@@ -60,6 +71,16 @@ const VariantRowActions = ({
       >
         <Trash2 size={14} />
       </button>
+
+      <Modal
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        title={variant.sku ?? `Variant #${variant.id}`}
+        resizable
+        width={{ default: 480, min: 400, max: 720 }}
+      >
+        <VariantViewDetails variant={variant} />
+      </Modal>
 
       <SheetPanel
         open={editOpen}

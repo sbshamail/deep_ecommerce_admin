@@ -13,7 +13,7 @@ import {
 } from "@/types/product_types";
 import { ActionType, ColumnType, NewActionMenu } from "@/types/table_types";
 import ProductRowActions from "./ProductRowActions";
-import ProductVariantTable from "./ProductVariantTable";
+import ProductVariantTable from "./ProductVariantTable/ProductVariantTable";
 
 interface ProductTableProps {
   products: ProductRead[];

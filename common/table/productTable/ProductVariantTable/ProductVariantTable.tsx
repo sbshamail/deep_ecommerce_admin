@@ -110,7 +110,13 @@ const ProductVariantTable = ({
 
   return (
     <div className="mx-2 overflow-hidden rounded-b-2xl border-2 border-t-0 border-foreground/50">
-      <Table<ProductVariantBase> columns={columns} data={data} total={1} rowId="id" striped>
+      <Table<ProductVariantBase>
+        columns={columns}
+        data={data}
+        total={1}
+        rowId="id"
+        striped
+      >
         <Table.Body />
       </Table>
 
