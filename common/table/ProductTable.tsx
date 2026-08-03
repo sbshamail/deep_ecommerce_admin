@@ -192,6 +192,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       expandable={true}
       ExpandingContent={(row: ProductRead) => (
         <ProductVariantTable
+          productId={row.id}
           data={row?.variants || []}
           onSelectionChange={(variantRows) => {
             // Picking a specific variant is a different intent than bulk-
@@ -201,6 +202,15 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
               setSelectedRows((prev) => prev.filter((r) => r.id !== row.id));
             }
           }}
+          onVariantSaved={(saved) =>
+            setRows((prev) =>
+              prev.map((p) =>
+                p.id === row.id
+                  ? { ...p, variants: upsertById(p.variants ?? [], saved) }
+                  : p,
+              ),
+            )
+          }
           onVariantDeleted={(variantId) =>
             setRows((prev) =>
               prev.map((p) =>

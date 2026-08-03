@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-const numericString = (message: string) =>
+export const numericString = (message: string) =>
   z.string().min(1, message).refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
     message,
   });
 
-const optionalNumericString = (message: string) =>
+export const optionalNumericString = (message: string) =>
   z
     .string()
     .refine((v) => v === "" || (!Number.isNaN(Number(v)) && Number(v) >= 0), {

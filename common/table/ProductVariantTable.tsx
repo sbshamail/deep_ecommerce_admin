@@ -1,15 +1,25 @@
+"use client";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+
 import Table from "@/components/cui/table";
+import { Button } from "@/components/ui/button";
+import { SheetPanel } from "@/components/ui/sheet-panel";
 import { ProductVariantBase } from "@/types/product_types";
 import { ColumnType } from "@/types/table_types";
 
+import VariantForm from "./VariantForm";
 import VariantRowActions from "./VariantRowActions";
 
 interface ProductVariantTableProps {
+  productId: number;
   data: ProductVariantBase[];
   /** Fires with the current variant selection whenever it changes — the
    * parent product row uses this to deselect itself once you're picking
    * specific variants instead of the whole product. */
   onSelectionChange?: (rows: ProductVariantBase[]) => void;
+  /** Fires after a variant is created or updated, with the saved record. */
+  onVariantSaved?: (variant: ProductVariantBase) => void;
   onVariantDeleted?: (id: number) => void;
 }
 
@@ -18,9 +28,13 @@ interface ProductVariantTableProps {
 // (single product read/update) does. This table only renders pricing/stock
 // fields, all present on the base shape, so it takes that directly.
 const ProductVariantTable = ({
+  productId,
   data,
+  onVariantSaved,
   onVariantDeleted,
 }: ProductVariantTableProps) => {
+  const [createOpen, setCreateOpen] = useState(false);
+
   const columns: ColumnType<ProductVariantBase>[] = [
     {
       title: "image",
@@ -84,23 +98,54 @@ const ProductVariantTable = ({
       title: "Actions",
       render: ({ row }) =>
         row && (
-          <VariantRowActions variant={row} onDeleted={onVariantDeleted} />
+          <VariantRowActions
+            productId={productId}
+            variant={row}
+            onSaved={onVariantSaved}
+            onDeleted={onVariantDeleted}
+          />
         ),
     },
   ];
+
   return (
-    <Table<ProductVariantBase>
-      columns={columns}
-      data={data}
-      total={1}
-      rowId="id"
-      striped
-      className="border-2 border-t-0  border-foreground/50 mx-2 rounded-bl-2xl rounded-br-2xl"
-      // selectedRows={selectedRows}
-      // setSelectedRows={handleSelectionChange}
-    >
-      <Table.Body />
-    </Table>
+    <div className="mx-2 overflow-hidden rounded-b-2xl border-2 border-t-0 border-foreground/50">
+      <Table<ProductVariantBase> columns={columns} data={data} total={1} rowId="id" striped>
+        <Table.Body />
+      </Table>
+
+      <div className="border-t border-foreground/50 p-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="gap-1"
+          onClick={() => setCreateOpen(true)}
+        >
+          <Plus size={14} />
+          Add variant
+        </Button>
+      </div>
+
+      <SheetPanel
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        title="Add variant"
+        resizable
+        width={{ default: 480, min: 400, max: 720 }}
+      >
+        <VariantForm
+          mode="create"
+          productId={productId}
+          nextPosition={data.length}
+          onSuccess={(created) => {
+            onVariantSaved?.(created);
+            setCreateOpen(false);
+          }}
+          close={() => setCreateOpen(false)}
+        />
+      </SheetPanel>
+    </div>
   );
 };
 
