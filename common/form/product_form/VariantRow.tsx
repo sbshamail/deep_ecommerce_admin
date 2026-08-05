@@ -101,7 +101,7 @@ const VariantRow = ({
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" min={0} {...field} />
+                  <Input type="number" step="1" min={50} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -116,8 +116,8 @@ const VariantRow = ({
                 <FormControl>
                   <Input
                     type="number"
-                    step="0.01"
-                    min={0}
+                    step="1"
+                    min={1}
                     placeholder="Optional"
                     {...field}
                   />
@@ -133,7 +133,7 @@ const VariantRow = ({
               <FormItem>
                 <FormLabel>Stock</FormLabel>
                 <FormControl>
-                  <Input type="number" min={0} {...field} />
+                  <Input type="number" min={1} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

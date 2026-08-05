@@ -124,25 +124,24 @@ export const ProductFormBody = ({
         formData.append("delete_images", image.filename);
       }
     });
-    console.log(values.images);
 
-    // const url =
-    //   mode === "create"
-    //     ? "/api/product/create"
-    //     : `/api/product/update/${productId}`;
-    // const res = await fetch(url, { method: "POST", body: formData });
-    // const payload = (await res.json().catch(() => null)) as {
-    //   data?: ProductSingleRead;
-    //   detail?: string;
-    // } | null;
+    const url =
+      mode === "create"
+        ? "/api/product/create"
+        : `/api/product/update/${productId}`;
+    const res = await fetch(url, { method: "POST", body: formData });
+    const payload = (await res.json().catch(() => null)) as {
+      data?: ProductSingleRead;
+      detail?: string;
+    } | null;
 
-    // if (!res.ok || !payload?.data) {
-    //   setServerError(payload?.detail ?? "Something went wrong");
-    //   return;
-    // }
+    if (!res.ok || !payload?.data) {
+      setServerError(payload?.detail ?? "Something went wrong");
+      return;
+    }
 
-    // onSuccess?.(payload.data);
-    // close?.();
+    onSuccess?.(payload.data);
+    close?.();
   };
 
   return (

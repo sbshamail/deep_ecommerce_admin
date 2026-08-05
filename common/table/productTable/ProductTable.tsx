@@ -19,6 +19,7 @@ interface ProductTableProps {
   products: ProductRead[];
   total: number;
   categories: CategoryTreeNode[];
+  loadError?: string | null;
 }
 
 // ProductSingleRead.variants carries a wider shape than the list row's
@@ -30,7 +31,12 @@ const toProductRow = (product: ProductSingleRead): ProductRead => ({
     product.variants?.map((v) => ({ ...v, price: v.price ?? 0 })) ?? null,
 });
 
-const ProductTable = ({ products, total, categories }: ProductTableProps) => {
+const ProductTable = ({
+  products,
+  total,
+  categories,
+  loadError,
+}: ProductTableProps) => {
   const { user, canInShop } = useAuth();
   // A fresh `products` prop means the server re-fetched (e.g. navigation) —
   // resync local state to it rather than keep stale patched rows. Adjusted
@@ -135,6 +141,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         title: "Edit",
         Icon: Pencil,
         resizable: true,
+        visible: "selected",
         width: { default: 720, min: 480, max: 1100 },
         disabled: !canUpdate || rows.length !== 1,
         Component: (ctx: ActionType<ProductRead>) => {
@@ -160,7 +167,7 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
         Icon: Plus,
         className: canCreate ? "" : "hidden",
         resizable: true,
-        width: { default: 720, min: 480, max: 1100 },
+        width: { default: 1100, min: 480, max: 1100, resize: true },
         Component: (ctx: ActionType<ProductRead>) => {
           return (
             <ProductForm
@@ -189,6 +196,17 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
       showColumnFilter
       selectedRows={selectedRows}
       setSelectedRows={setSelectedRows}
+      newActionMenu={newActionMenu}
+      emptyState={
+        <div className="flex flex-col items-center justify-center gap-1 py-10 text-sm">
+          <span className="font-medium text-foreground">No products found</span>
+          <span className="text-muted-foreground">
+            {canCreate
+              ? 'Use "Create product" above to add your first product.'
+              : "There are no products to show yet."}
+          </span>
+        </div>
+      }
       expandable={true}
       ExpandingContent={(row: ProductRead) => (
         <ProductVariantTable
@@ -226,10 +244,14 @@ const ProductTable = ({ products, total, categories }: ProductTableProps) => {
           }
         />
       )}
-      newActionMenu={newActionMenu}
       tableWrapperClass="max-h-[calc(100svh-330px)] overflow-auto"
     >
       <Table.Header className="min-w-0 border-b border-border p-2 font-semibold">
+        {loadError && (
+          <p className="mb-2 text-sm font-normal text-destructive">
+            {loadError}
+          </p>
+        )}
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <Table.Dates />
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">

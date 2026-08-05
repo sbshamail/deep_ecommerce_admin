@@ -35,6 +35,8 @@ export interface TableMainBodyTypes extends TableMainClassesType {
   stripedClass?: ClassNameType;
   tableWrapperClass?: ClassNameType;
   wrapperClass?: ClassNameType;
+  // Shown as a single full-width row in place of the body when data is empty
+  emptyState?: React.ReactNode;
 }
 const TableMainBody = ({
   data,
@@ -50,6 +52,7 @@ const TableMainBody = ({
   stripedClass = "bg-accent",
   tableWrapperClass,
   wrapperClass,
+  emptyState,
   // tables classes
   tableClass,
   trHeadClass,
@@ -122,9 +125,25 @@ const TableMainBody = ({
       </tr>
     </thead>
   );
+  const colSpan =
+    (columns?.length ?? 0) +
+    (expandable || multiExpandable ? 1 : 0) +
+    (selectedRows ? 1 : 0);
+
   const TableBody = () => (
     <tbody className={twMerge(`text-sm font-medium`, ` ${tBodyClass} `)}>
-      {data?.map((item, index: number) => {
+      {!data?.length ? (
+        <tr>
+          <td colSpan={colSpan || 1} className={`${tableInsideClass}`}>
+            {emptyState ?? (
+              <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
+                No records found
+              </div>
+            )}
+          </td>
+        </tr>
+      ) : (
+        data?.map((item, index: number) => {
         const expanded = isExpandable(
           openExpandableRow,
           index,
@@ -197,7 +216,8 @@ const TableMainBody = ({
             )}
           </React.Fragment>
         );
-      })}
+        })
+      )}
     </tbody>
   );
   return (

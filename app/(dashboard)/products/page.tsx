@@ -30,10 +30,6 @@ const page = async () => {
       err instanceof ApiError ? err.message : "Failed to load products";
   }
 
-  if (loadError) {
-    return <p className="text-sm text-destructive">{loadError}</p>;
-  }
-
   let categoryTree: CategoryTreeNode[] = [];
   try {
     categoryTree = await backendFetch<CategoryTreeNode[]>(
@@ -44,7 +40,12 @@ const page = async () => {
   }
 
   return (
-    <ProductTable products={products} total={total} categories={categoryTree} />
+    <ProductTable
+      products={products}
+      total={total}
+      categories={categoryTree}
+      loadError={loadError}
+    />
   );
 };
 

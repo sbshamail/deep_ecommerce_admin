@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
 
 export type TableDensity = "compact" | "default" | "comfortable";
@@ -74,6 +75,7 @@ export interface TableContextValue extends TableMainClassesType {
   multiExpandable?: boolean;
   ExpandingContent?: ExpandingTableType;
   tableWrapperClass?: ClassNameType;
+  emptyState?: ReactNode;
 }
 
 const TableContext = createContext<TableContextValue | null>(null);

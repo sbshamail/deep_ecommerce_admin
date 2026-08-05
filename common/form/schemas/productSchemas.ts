@@ -18,19 +18,28 @@ export const variantAttributeSchema = z.object({
   value: z.string().min(1, "Value is required"),
 });
 
-export const productVariantSchema = z.object({
-  // Present when editing an existing variant; absent on a newly-added row.
-  id: z.number().optional(),
-  price: numericString("Price must be 0 or more"),
-  discount_price: optionalNumericString("Discount price must be 0 or more"),
-  stock: numericString("Stock must be 0 or more"),
-  sku: z.string().optional(),
-  attributes: z.array(variantAttributeSchema),
-  // Client-only — a new file to upload, and/or the existing image's preview
-  // URL. Neither is sent as JSON; onSubmit reads imageFile directly.
-  imageFile: z.instanceof(File).nullable().optional(),
-  imageUrl: z.string().nullable().optional(),
-});
+export const productVariantSchema = z
+  .object({
+    // Present when editing an existing variant; absent on a newly-added row.
+    id: z.number().optional(),
+    price: numericString("Price must be 0 or more"),
+    discount_price: optionalNumericString("Discount price must be 0 or more"),
+    stock: numericString("Stock must be 0 or more"),
+    sku: z.string().optional(),
+    attributes: z.array(variantAttributeSchema),
+    // Client-only — a new file to upload, and/or the existing image's preview
+    // URL. Neither is sent as JSON; onSubmit reads imageFile directly.
+    imageFile: z.instanceof(File).nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
+  })
+  .refine(
+    (v) =>
+      !v.discount_price || Number(v.discount_price) < Number(v.price),
+    {
+      message: "Discount price must be less than price",
+      path: ["discount_price"],
+    },
+  );
 
 export const MAX_PRODUCT_IMAGES = 4;
 

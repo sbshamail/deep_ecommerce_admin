@@ -73,6 +73,8 @@ interface TableRootProps<
   multiExpandable?: boolean;
   ExpandingContent?: ExpandingTableType<T>;
   tableWrapperClass?: ClassNameType;
+  // Shown in the body in place of rows when there's no data
+  emptyState?: React.ReactNode;
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
@@ -103,6 +105,7 @@ const TableRoot = <T = Record<string, unknown>,>({
   multiExpandable,
   ExpandingContent,
   tableWrapperClass,
+  emptyState,
   tableClass,
   trHeadClass,
   tHeadClass,
@@ -218,6 +221,7 @@ const TableRoot = <T = Record<string, unknown>,>({
       | ExpandingTableType
       | undefined,
     tableWrapperClass,
+    emptyState,
     tableClass,
     trHeadClass,
     tHeadClass,
@@ -442,6 +446,7 @@ const BodyRenderer = () => {
         c.fullScreen ? "h-full overflow-auto" : c.tableWrapperClass
       }
       wrapperClass={c.fullScreen ? "h-full" : undefined}
+      emptyState={c.emptyState}
       tableClass={c.tableClass}
       trHeadClass={c.trHeadClass}
       tHeadClass={c.tHeadClass}
