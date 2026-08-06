@@ -49,7 +49,7 @@ export const ProductFormBody = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialThumbnailUrl,
   );
-
+  console.log({ defaultValues });
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues,
@@ -59,8 +59,6 @@ export const ProductFormBody = ({
     control: form.control,
     name: "variants",
   });
-
-  const watch = form.watch;
 
   const isDirty = form.formState.isDirty || Boolean(thumbnailFile);
   useEffect(() => {

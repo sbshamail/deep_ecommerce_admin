@@ -23,9 +23,9 @@ interface ProductFormProps {
 }
 
 export const emptyVariant: ProductVariantFormValue = {
-  price: "0",
+  price: "1",
   discount_price: "",
-  stock: "0",
+  stock: "1",
   sku: "",
   attributes: [],
   imageFile: null,
@@ -56,10 +56,10 @@ const toDefaultValues = (product: ProductSingleRead): ProductFormValues => ({
     product.variants && product.variants.length > 0
       ? product.variants.map((v) => ({
           id: v.id,
-          price: String(v.price ?? 0),
+          price: String(v.price ?? 1),
           discount_price:
-            v.discount_price != null ? String(v.discount_price) : "",
-          stock: String(v.stock ?? 0),
+            v.discount_price != null ? String(v.discount_price) : "1",
+          stock: String(v.stock ?? 1),
           sku: v.sku ?? "",
           attributes: Object.entries(v.attributes ?? {}).map(
             ([key, value]) => ({

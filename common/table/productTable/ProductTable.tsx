@@ -50,6 +50,15 @@ const ProductTable = ({
     setRows(products);
     setRowTotal(total);
   }
+  // Mirrors the initial server-fetch error so it can be dismissed locally —
+  // a successful create/update proves the list endpoint works again, so the
+  // stale error banner shouldn't keep showing after that.
+  const [prevLoadError, setPrevLoadError] = useState(loadError);
+  const [error, setError] = useState(loadError ?? null);
+  if (loadError !== prevLoadError) {
+    setPrevLoadError(loadError);
+    setError(loadError ?? null);
+  }
   const [selectedRows, setSelectedRows] = useState<ProductRead[]>([]);
 
   const columns: ColumnType<ProductRead>[] = [
@@ -142,7 +151,7 @@ const ProductTable = ({
         Icon: Pencil,
         resizable: true,
         visible: "selected",
-        width: { default: 720, min: 480, max: 1100 },
+        width: { default: 1100, min: 480, max: 1100 },
         disabled: !canUpdate || rows.length !== 1,
         Component: (ctx: ActionType<ProductRead>) => {
           const row = ctx.selectedRows[0];
@@ -151,9 +160,10 @@ const ProductTable = ({
               mode="update"
               productId={row?.id}
               categories={categories}
-              onSuccess={(updated) =>
-                setRows((prev) => upsertById(prev, toProductRow(updated)))
-              }
+              onSuccess={(updated) => {
+                setRows((prev) => upsertById(prev, toProductRow(updated)));
+                setError(null);
+              }}
               close={ctx.close}
               onDirtyChange={ctx.onDirtyChange}
             />
@@ -167,7 +177,7 @@ const ProductTable = ({
         Icon: Plus,
         className: canCreate ? "" : "hidden",
         resizable: true,
-        width: { default: 1100, min: 480, max: 1100, resize: true },
+        width: { default: 1100, min: 480, max: 1100 },
         Component: (ctx: ActionType<ProductRead>) => {
           return (
             <ProductForm
@@ -176,6 +186,7 @@ const ProductTable = ({
               onSuccess={(created) => {
                 setRows((prev) => upsertById(prev, toProductRow(created)));
                 setRowTotal((prev) => prev + 1);
+                setError(null);
               }}
               close={ctx.close}
               onDirtyChange={ctx.onDirtyChange}
@@ -247,10 +258,8 @@ const ProductTable = ({
       tableWrapperClass="max-h-[calc(100svh-330px)] overflow-auto"
     >
       <Table.Header className="min-w-0 border-b border-border p-2 font-semibold">
-        {loadError && (
-          <p className="mb-2 text-sm font-normal text-destructive">
-            {loadError}
-          </p>
+        {error && (
+          <p className="mb-2 text-sm font-normal text-destructive">{error}</p>
         )}
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <Table.Dates />

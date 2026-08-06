@@ -1,9 +1,12 @@
 import { z } from "zod";
 
 export const numericString = (message: string) =>
-  z.string().min(1, message).refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
-    message,
-  });
+  z
+    .string()
+    .min(1, message)
+    .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, {
+      message,
+    });
 
 export const optionalNumericString = (message: string) =>
   z
@@ -33,8 +36,7 @@ export const productVariantSchema = z
     imageUrl: z.string().nullable().optional(),
   })
   .refine(
-    (v) =>
-      !v.discount_price || Number(v.discount_price) < Number(v.price),
+    (v) => !v.discount_price || Number(v.discount_price) < Number(v.price),
     {
       message: "Discount price must be less than price",
       path: ["discount_price"],
