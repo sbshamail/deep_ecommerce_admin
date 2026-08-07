@@ -32,6 +32,7 @@ const COLUMN_LABELS = ["Top level", "Sub-category", "Sub-sub-category"];
 
 interface CategoryDropdownProps {
   categories: CategoryTreeNode[];
+  loadError?: string | null;
 }
 
 type FormState =
@@ -40,12 +41,13 @@ type FormState =
 
 // Selection is tracked by id (not node reference) so it survives a tree
 // patch (create/update/delete) after every mutation.
-const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
+const CategoryDropdown = ({ categories, loadError }: CategoryDropdownProps) => {
   const { can } = useAuth();
 
   const canCreate = can("category:create");
   const canUpdate = can("category:create", "category:update");
   const canDelete = can("category:delete");
+  console.log(canCreate);
 
   // A fresh `categories` prop means the server re-fetched (e.g. navigation) —
   // resync local state to it rather than keep stale patched data. Adjusted
@@ -56,6 +58,16 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
   if (categories !== prevCategories) {
     setPrevCategories(categories);
     setTree(categories);
+  }
+
+  // Mirrors the initial server-fetch error so it can be dismissed locally —
+  // a successful create/update proves the list endpoint works again, so the
+  // stale error banner shouldn't keep showing after that.
+  const [prevLoadError, setPrevLoadError] = useState(loadError);
+  const [error, setError] = useState(loadError ?? null);
+  if (loadError !== prevLoadError) {
+    setPrevLoadError(loadError);
+    setError(loadError ?? null);
   }
 
   const [rawSelectedIds, setSelectedIds] = useState<number[]>([]);
@@ -116,6 +128,7 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
   };
   return (
     <div className="space-y-4">
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-lg font-semibold">
@@ -155,9 +168,21 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
 
             <div className="flex-1 overflow-y-auto p-1.5">
               {nodes.length === 0 ? (
-                <p className="px-2 py-4 text-center text-sm text-muted-foreground">
-                  No categories
-                </p>
+                <div className="flex flex-col items-center gap-2 px-2 py-6 text-center text-sm text-muted-foreground">
+                  <span>No categories found</span>
+                  {canCreate && colIndex === 0 && (
+                    <Button
+                      size="sm"
+                      className="gap-1"
+                      onClick={() =>
+                        setForm({ mode: "create", parentId: null })
+                      }
+                    >
+                      <Plus size={14} />
+                      Create category
+                    </Button>
+                  )}
+                </div>
               ) : (
                 nodes.map((node) => {
                   const isSelected = selectedIds[colIndex] === node.id;
@@ -279,11 +304,12 @@ const CategoryDropdown = ({ categories }: CategoryDropdownProps) => {
                 form.mode === "create" ? form.parentId : undefined
               }
               categories={tree}
-              onSuccess={(saved) =>
+              onSuccess={(saved) => {
                 setTree((prev) =>
                   upsertTreeNode(prev, { ...saved, children: [] }),
-                )
-              }
+                );
+                setError(null);
+              }}
               close={() => setForm(null)}
             />
           )}

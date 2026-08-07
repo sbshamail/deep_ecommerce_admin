@@ -15,11 +15,7 @@ const page = async () => {
       err instanceof ApiError ? err.message : "Failed to load categories";
   }
 
-  if (loadError) {
-    return <p className="text-sm text-destructive">{loadError}</p>;
-  }
-
-  return <CategoryDropdown categories={categories} />;
+  return <CategoryDropdown categories={categories} loadError={loadError} />;
 };
 
 export default page;

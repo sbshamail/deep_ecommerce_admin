@@ -82,7 +82,6 @@ export const ExtentableContent = ({
             width: `${expandableWidth}px`,
           }}
         >
-          {/* <div>adasdasd</div> */}
           {ExpandingContent && ExpandingContent(item, index, data)}
         </div>
       </td>
